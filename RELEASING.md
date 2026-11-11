@@ -33,7 +33,7 @@ These tasks use checkboxes so that they can be copied into an issue.
 - [ ] Merge the pull request, to create the tag and the draft release (done by [Release Main Version](https://github.com/zaproxy/zaproxy/actions/workflows/release-main-version.yml));
 - [ ] Verify the draft release.
 - [ ] Publish the release.
-- [ ] Update the [Linux Repos](https://software.opensuse.org/download.html?project=home%3Acabelo&package=owasp-zap)
+- [ ] Update the [Linux Repos](https://software.opensuse.org/download.html?project=home%3Acabelo&package=zap)
 
 Once published the [Handle Release](https://github.com/zaproxy/zaproxy/actions/workflows/handle-release.yml) workflow
 will trigger the update of the marketplace with the new release, it will also create a pull request preparing the next
