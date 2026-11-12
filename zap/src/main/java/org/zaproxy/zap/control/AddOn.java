@@ -494,7 +494,31 @@ public class AddOn {
     }
 
     private static String extractAddOnId(String fileName) {
-        return fileName.substring(0, fileName.lastIndexOf('.')).split("-")[0];
+        // The ID can contain hyphens, the file name has the form
+        // <id>-<status>-<version> (e.g. zap-lookup-alpha-1.1.0.zap) or just <id>-<version>
+        // for installed add-ons (e.g. zap-lookup-1.1.0.zap).
+        String[] parts = fileName.substring(0, fileName.lastIndexOf('.')).split("-");
+        int idParts = parts.length;
+        if (idParts > 1 && isVersion(parts[idParts - 1])) {
+            idParts--;
+        }
+        if (idParts > 1 && isStatus(parts[idParts - 1])) {
+            idParts--;
+        }
+        return String.join("-", Arrays.copyOf(parts, idParts));
+    }
+
+    private static boolean isVersion(String value) {
+        return value.matches("\\d+(\\.\\d+)*");
+    }
+
+    private static boolean isStatus(String value) {
+        for (Status status : Status.values()) {
+            if (status.name().equals(value)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void loadManifestFile() throws IOException {

@@ -517,6 +517,78 @@ class AddOnUnitTest extends AddOnTestUtils {
     }
 
     @Test
+    void shouldCreateAddOnWithHyphensInId() throws Exception {
+        // Given
+        Path file = createAddOnFile("zap-lookup-alpha-1.1.0.zap", "alpha", "1.1.0");
+        // When
+        AddOn addOn = new AddOn(file);
+        // Then
+        assertThat(addOn.getId(), is(equalTo("zap-lookup")));
+        assertThat(addOn.getStatus(), is(equalTo(AddOn.Status.alpha)));
+        assertThat(addOn.getVersion().toString(), is(equalTo("1.1.0")));
+    }
+
+    @Test
+    void shouldCreateAddOnWithHyphensInIdWithoutStatusInFileName() throws Exception {
+        // Given
+        Path file = createAddOnFile("zap-lookup-1.1.0.zap", "alpha", "1.1.0");
+        // When
+        AddOn addOn = new AddOn(file);
+        // Then
+        assertThat(addOn.getId(), is(equalTo("zap-lookup")));
+    }
+
+    @Test
+    void shouldCreateAddOnWithHyphensInIdWithoutVersionInFileName() throws Exception {
+        // Given
+        Path file = createAddOnFile("zap-lookup-alpha.zap", "alpha", "1.1.0");
+        // When
+        AddOn addOn = new AddOn(file);
+        // Then
+        assertThat(addOn.getId(), is(equalTo("zap-lookup")));
+    }
+
+    @Test
+    void shouldKeepStatusLikePartOfIdWhenFollowedByVersion() throws Exception {
+        // Given
+        Path file = createAddOnFile("addon-alpha-alpha-1.1.0.zap", "alpha", "1.1.0");
+        // When
+        AddOn addOn = new AddOn(file);
+        // Then
+        assertThat(addOn.getId(), is(equalTo("addon-alpha")));
+    }
+
+    @Test
+    void shouldCreateAddOnWithIdThatIsAStatus() throws Exception {
+        // Given
+        Path file = createAddOnFile("alpha.zap", "release", "1.0.0");
+        // When
+        AddOn addOn = new AddOn(file);
+        // Then
+        assertThat(addOn.getId(), is(equalTo("alpha")));
+    }
+
+    @Test
+    void shouldCreateAddOnWithIdThatIsAVersion() throws Exception {
+        // Given
+        Path file = createAddOnFile("1.zap", "release", "1.0.0");
+        // When
+        AddOn addOn = new AddOn(file);
+        // Then
+        assertThat(addOn.getId(), is(equalTo("1")));
+    }
+
+    @Test
+    void shouldReturnNormalisedFileNameWithHyphensInId() throws Exception {
+        // Given
+        Path file = createAddOnFile("zap-lookup-alpha-1.1.0.zap", "alpha", "1.1.0");
+        // When
+        AddOn addOn = new AddOn(file);
+        // Then
+        assertThat(addOn.getNormalisedFileName(), is(equalTo("zap-lookup-1.1.0.zap")));
+    }
+
+    @Test
     void shouldIgnoreStatusInFileNameWhenCreatingAddOnFromFile() throws Exception {
         // Given
         Path file = createAddOnFile("addon-alpha.zap", "release", "1");

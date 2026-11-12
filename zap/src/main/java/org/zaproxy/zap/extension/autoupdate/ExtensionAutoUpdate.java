@@ -604,12 +604,9 @@ public class ExtensionAutoUpdate extends ExtensionAdaptor
                     if (addonsDialog != null) {
                         addonsDialog.notifyAddOnDownloadFailed(dl.getUrl().toString());
                     } else {
-                        String url = dl.getUrl().toString();
-                        for (AddOn addOn : latestVersionInfo.getAddOns()) {
-                            if (url.equals(addOn.getUrl().toString())) {
-                                addOn.setInstallationStatus(AddOn.InstallationStatus.AVAILABLE);
-                                break;
-                            }
+                        AddOn addOn = getAddOnByUrl(latestVersionInfo, dl.getUrl());
+                        if (addOn != null) {
+                            addOn.setInstallationStatus(AddOn.InstallationStatus.AVAILABLE);
                         }
                     }
                 } else if (AddOn.isAddOnFileName(dl.getTargetFile().getName())) {
@@ -654,6 +651,13 @@ public class ExtensionAutoUpdate extends ExtensionAdaptor
                     AddOn.createAddOn(f.toPath())
                             .ifPresent(
                                     ao -> {
+                                        // Prefer the ID declared in the marketplace, the file name
+                                        // does not always match it (e.g. levoai).
+                                        AddOn availableAddOn =
+                                                getAddOnByUrl(latestVersionInfo, dl.getUrl());
+                                        if (availableAddOn != null) {
+                                            ao.setId(availableAddOn.getId());
+                                        }
                                         if (ao.canLoadInCurrentVersion()) {
                                             allInstalled.setValue(
                                                     allInstalled.booleanValue() & install(ao));
@@ -678,6 +682,19 @@ public class ExtensionAutoUpdate extends ExtensionAdaptor
         }
         this.installsCompleted = true;
         this.installsOk = allInstalled.booleanValue();
+    }
+
+    static AddOn getAddOnByUrl(AddOnCollection addOns, URL url) {
+        if (addOns == null || url == null) {
+            return null;
+        }
+        String urlStr = url.toString();
+        for (AddOn addOn : addOns.getAddOns()) {
+            if (addOn.getUrl() != null && urlStr.equals(addOn.getUrl().toString())) {
+                return addOn;
+            }
+        }
+        return null;
     }
 
     public int getDownloadProgressPercent(URL url) throws Exception {
