@@ -40,6 +40,8 @@
 // ZAP: 2021/04/30 Add input vector to Alert
 // ZAP: 2021/08/24 Remove the "(non-Javadoc)" comments.
 // ZAP: 2025/10/01 Added support for nodeName.
+// ZAP: 2026/11/13 Issue 9280: Build the written record from the inserted values instead of reading
+// it back from the database.
 package org.parosproxy.paros.db.paros;
 
 import java.sql.CallableStatement;
@@ -394,7 +396,30 @@ public class ParosTableAlert extends ParosAbstractTable implements TableAlert {
                 rs.next();
                 id = rs.getInt(1);
             }
-            return read(id);
+            // Build the record from the inserted values instead of reading it back (Issue 9280).
+            return new RecordAlert(
+                    id,
+                    scanId,
+                    pluginId,
+                    alert,
+                    risk,
+                    confidence,
+                    description,
+                    uri,
+                    param,
+                    attack,
+                    otherInfo,
+                    solution,
+                    reference,
+                    evidence,
+                    cweId,
+                    wascId,
+                    historyId,
+                    sourceHistoryId,
+                    sourceId,
+                    alertRef,
+                    inputVector,
+                    nodeName);
         } catch (SQLException e) {
             throw new DatabaseException(e);
         }

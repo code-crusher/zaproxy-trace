@@ -100,11 +100,13 @@ public class ParosTableTag extends ParosAbstractTable implements TableTag {
             psInsertTag.setString(2, tag);
             psInsertTag.executeUpdate();
 
+            long id;
             try (ResultSet rs = psGetIdLastInsert.executeQuery()) {
                 rs.next();
-                long id = rs.getLong(1);
-                return read(id);
+                id = rs.getLong(1);
             }
+            // Build the record from the inserted values instead of reading it back (Issue 9280).
+            return new RecordTag(id, historyId, tag);
         } catch (SQLException e) {
             throw new DatabaseException(e);
         }

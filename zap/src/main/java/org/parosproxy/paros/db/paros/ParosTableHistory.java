@@ -49,6 +49,8 @@
 // ZAP: 2022/09/21 Use format specifiers instead of concatenation when logging.
 // ZAP: 2023/01/10 Tidy up logger.
 // ZAP: 2023/09/12 Implement setDatabaseOptions(DatabaseParam) and use those options.
+// ZAP: 2026/11/13 Issue 9280: Build the written record from the inserted values instead of reading
+// it back from the database.
 package org.parosproxy.paros.db.paros;
 
 import java.nio.charset.StandardCharsets;
@@ -523,12 +525,29 @@ public class ParosTableHistory extends ParosAbstractTable implements TableHistor
         ResultSet rs = stmt.getResultSet();
         */
 
+        int id;
         try (ResultSet rs = psGetIdLastInsert.executeQuery()) {
             rs.next();
-            int id = rs.getInt(1);
-            lastInsertedIndex = id;
-            return read(id);
+            id = rs.getInt(1);
         }
+        lastInsertedIndex = id;
+
+        // Build the record from the values already at hand instead of reading it back from the
+        // database. The read-back was a second round trip (and a full copy of the bodies) for every
+        // message persisted, all of it while holding the table's lock (Issue 9280).
+        return new RecordHistory(
+                id,
+                histType,
+                sessionId,
+                timeSentMillis,
+                timeElapsedMillis,
+                reqHeader,
+                reqBody,
+                resHeader,
+                resBody,
+                tag,
+                note,
+                responseFromTargetHost);
     }
 
     private RecordHistory build(ResultSet rs) throws HttpMalformedHeaderException, SQLException {

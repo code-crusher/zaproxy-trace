@@ -410,13 +410,10 @@ public class HistoryReference {
         build(session.getSessionId(), history.getHistoryId(), history.getHistoryType(), msg);
         // ZAP: Init HttpMessage HistoryReference field
         msg.setHistoryRef(this);
-        this.tags = getTags(historyId);
 
-        // ZAP: Support for loading the alerts from the db
-        List<RecordAlert> alerts = staticTableAlert.getAlertsBySourceHistoryId(historyId);
-        for (RecordAlert alert : alerts) {
-            this.addAlert(new Alert(alert, this));
-        }
+        // The history record was just created, so it cannot have tags or alerts yet (they are only
+        // added to existing records), no need to query the database for them. That used to be two
+        // more round trips per persisted message, all while holding the table's lock (Issue 9280).
     }
 
     /**
