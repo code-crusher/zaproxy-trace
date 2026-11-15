@@ -37,6 +37,8 @@ public class SqlTableTag extends SqlAbstractTable implements TableTag {
     private static final String HISTORYID = DbSQL.getSQL("tag.field.historyid");
     private static final String TAG = DbSQL.getSQL("tag.field.tag");
 
+    private static final String HISTORYID_INDEX = "TAG_HISTORYID_INDEX";
+
     public SqlTableTag() {}
 
     @Override
@@ -45,6 +47,11 @@ public class SqlTableTag extends SqlAbstractTable implements TableTag {
             if (!DbUtils.hasTable(conn, TABLE_NAME)) {
                 // Need to create the table
                 DbUtils.execute(conn, DbSQL.getSQL("tag.ps.createtable"));
+            }
+
+            if (!DbUtils.hasIndex(conn, TABLE_NAME, HISTORYID_INDEX)) {
+                // this speeds up the tag lookups done while passively scanning
+                DbUtils.execute(conn, DbSQL.getSQL("tag.ps.indexhistoryid"));
             }
         } catch (SQLException e) {
             throw new DatabaseException(e);
