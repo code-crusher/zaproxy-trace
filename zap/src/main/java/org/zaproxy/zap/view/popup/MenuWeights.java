@@ -40,6 +40,9 @@ public class MenuWeights {
     public static final int MENU_RUN_APP_WEIGHT = 29030;
     public static final int MENU_NEW_ALERT_WEIGHT = 29020;
     public static final int MENU_ALERTS_NODE_WEIGHT = 29010;
+    // The "AI Assisted" super menu shared by the AI add-ons (e.g. the LLM add-on) so
+    // they are grouped under a single menu item instead of each contributing their own.
+    public static final int MENU_AI_ASSISTED_WEIGHT = 29000;
     // ---
     public static final int MENU_INC_CONTEXT_WEIGHT = 27090;
     public static final int MENU_INC_SITE_CONTEXT_WEIGHT = 27080;
