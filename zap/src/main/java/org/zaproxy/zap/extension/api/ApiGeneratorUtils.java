@@ -32,6 +32,7 @@ import org.zaproxy.zap.extension.authorization.AuthorizationAPI;
 import org.zaproxy.zap.extension.autoupdate.AutoUpdateAPI;
 import org.zaproxy.zap.extension.autoupdate.OptionsParamCheckForUpdates;
 import org.zaproxy.zap.extension.brk.BreakAPI;
+import org.zaproxy.zap.extension.collaboration.CollaborationAPI;
 import org.zaproxy.zap.extension.forceduser.ForcedUserAPI;
 import org.zaproxy.zap.extension.httpsessions.HttpSessionsAPI;
 import org.zaproxy.zap.extension.ruleconfig.RuleConfigAPI;
@@ -83,6 +84,8 @@ public class ApiGeneratorUtils {
         imps.add(new HttpSessionsAPI(null));
 
         imps.add(new BreakAPI(null));
+
+        imps.add(new CollaborationAPI(null));
 
         imps.add(new AuthenticationAPI(null));
 
