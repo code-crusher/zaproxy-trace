@@ -80,6 +80,8 @@
 // ZAP: 2023/01/10 Tidy up logger.
 // ZAP: 2024/01/19 Store clean node name when adding leaf node.
 // ZAP: 2025/11/17 Add contentType to ADD events.
+// ZAP: 2026/11/17 Synchronize addPath(HistoryReference, HttpMessage, boolean), to prevent duplicate
+// nodes when called concurrently.
 package org.parosproxy.paros.model;
 
 import java.awt.EventQueue;
@@ -411,7 +413,7 @@ public class SiteMap extends SortedTreeModel {
      *     already exists
      * @since 2.7.0
      */
-    public SiteNode addPath(HistoryReference ref, HttpMessage msg, boolean newOnly) {
+    public synchronized SiteNode addPath(HistoryReference ref, HttpMessage msg, boolean newOnly) {
         if (Constant.isLowMemoryOptionSet()) {
             throw new InvalidParameterException(
                     "SiteMap should not be accessed when the low memory option is set");

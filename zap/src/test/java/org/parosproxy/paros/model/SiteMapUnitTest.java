@@ -38,6 +38,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.TreeSet;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import org.apache.commons.httpclient.URI;
 import org.apache.commons.httpclient.URIException;
 import org.junit.jupiter.api.AfterEach;
@@ -53,6 +55,7 @@ import org.parosproxy.paros.db.TableHistory;
 import org.parosproxy.paros.network.HtmlParameter;
 import org.parosproxy.paros.network.HttpMalformedHeaderException;
 import org.parosproxy.paros.network.HttpMessage;
+import org.parosproxy.paros.network.HttpResponseHeader;
 import org.zaproxy.zap.ZAP;
 import org.zaproxy.zap.eventBus.Event;
 import org.zaproxy.zap.eventBus.EventConsumer;
@@ -316,6 +319,60 @@ class SiteMapUnitTest {
         // Then
         assertThat(leaf.getNodeName(), is(equalTo("POST:cat(videos)(online)")));
         assertThat(leaf.getCleanNodeName(), is(equalTo("cat")));
+    }
+
+    @Test
+    void shouldAddSingleHostNodeWhenAddingSameHostConcurrently() throws Exception {
+        // Given
+        int threadCount = 16;
+        List<HistoryReference> hrefs = new ArrayList<>();
+        for (int i = 0; i < threadCount; i++) {
+            hrefs.add(createHistoryReference("http://example.com/page" + i));
+        }
+        CountDownLatch start = new CountDownLatch(1);
+        CountDownLatch done = new CountDownLatch(threadCount);
+        List<Throwable> failures = Collections.synchronizedList(new ArrayList<>());
+        // When
+        for (HistoryReference href : hrefs) {
+            new Thread(
+                            () -> {
+                                try {
+                                    start.await();
+                                    siteMap.addPath(href, href.getHttpMessage(), false);
+                                } catch (Throwable e) {
+                                    failures.add(e);
+                                } finally {
+                                    done.countDown();
+                                }
+                            },
+                            "site-map-test")
+                    .start();
+        }
+        start.countDown();
+        assertThat(done.await(10, TimeUnit.SECONDS), is(equalTo(true)));
+        assertThat(failures, is(equalTo(Collections.emptyList())));
+        // Then
+        assertThat(rootNode.getChildCount(), is(equalTo(1)));
+        assertThat(
+                ((SiteNode) rootNode.getChildAt(0)).getNodeName(),
+                is(equalTo("http://example.com")));
+    }
+
+    @Test
+    void shouldAddNodeForUrlThatWasNotRequested() throws Exception {
+        // Given
+        String uri = "http://example.com/discovered";
+        HistoryReference href = createHistoryReference(uri);
+        // The URL was discovered, not requested, so there is no response.
+        href.getHttpMessage().setResponseHeader(new HttpResponseHeader());
+        href.getHttpMessage().setResponseBody("");
+        // When
+        SiteNode node = siteMap.addPath(href, href.getHttpMessage(), false);
+        // Then
+        assertThat(node, is(notNullValue()));
+        assertThat(node.getNodeName(), is(equalTo("GET:discovered")));
+        assertThat(node.getHistoryReference(), is(equalTo(href)));
+        assertThat(node.getHierarchicNodeName(), is(equalTo(uri)));
     }
 
     @Test
