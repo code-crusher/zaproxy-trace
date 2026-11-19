@@ -1,11 +1,11 @@
 # syntax=docker/dockerfile:1
 # This dockerfile builds the zap bare release
-FROM --platform=linux/amd64 debian:bookworm-slim AS builder
+FROM --platform=linux/amd64 debian:trixie-slim AS builder
 
 RUN apt-get update && apt-get install -q -y --fix-missing \
 	wget \
 	curl \
-	openjdk-17-jdk \
+	openjdk-21-jdk \
 	xmlstarlet \
 	unzip && \
 	rm -rf /var/lib/apt/lists/*

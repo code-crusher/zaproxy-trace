@@ -1,11 +1,11 @@
 # syntax=docker/dockerfile:1
 # This dockerfile builds a ZAP docker image used for integration tests
-FROM --platform=linux/amd64 debian:bookworm-slim AS builder
+FROM --platform=linux/amd64 debian:trixie-slim AS builder
 
 ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && apt-get install -q -y --fix-missing \
-	openjdk-17-jdk \
+	openjdk-21-jdk \
 	git && \
 	rm -rf /var/lib/apt/lists/* && \
 	mkdir /zap-src

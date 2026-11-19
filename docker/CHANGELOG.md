@@ -1,6 +1,9 @@
 # Changelog
 All notable changes to the docker containers will be documented in this file.
 
+### 2026-11-19
+- Updated stable, bare, and test images to debian:trixie and JDK 21, the bookworm base images reach EOL 10 June 2026 (Issue 9310).
+
 ### 2026-10-28
 - Updated to use Webswing 26.
 
