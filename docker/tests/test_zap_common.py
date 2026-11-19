@@ -1,3 +1,4 @@
+import re
 import unittest
 from datetime import datetime
 from unittest.mock import Mock, PropertyMock, patch
@@ -8,27 +9,141 @@ import zapv2
 class TestZapCommon(unittest.TestCase):
 
     def setUp(self):
+        zap_common.zap_hooks = None
         zap_common.context_id = None
         zap_common.context_name = None
         zap_common.context_users = None
         zap_common.scan_user = None
 
     def tearDown(self):
+        zap_common.zap_hooks = None
         zap_common.context_id = None
         zap_common.context_name = None
         zap_common.context_users = None
         zap_common.scan_user = None
 
     def test_load_config(self):
-        pass
+        config_dict = {}
+        config_msg = {}
+        out_of_scope_dict = {}
+        config = [
+            "10055-7\tIGNORE\t(script-src unsafe-hashes)\tAccepted risk\n",
+            "10055-8,10055-9\tOUTOFSCOPE\thttps://example\\.com/ignored\n",
+        ]
+
+        zap_common.load_config(config, config_dict, config_msg, out_of_scope_dict)
+
+        self.assertEqual({'10055-7': 'IGNORE'}, config_dict)
+        self.assertEqual({'10055-7': 'Accepted risk'}, config_msg)
+        self.assertEqual({'10055-8', '10055-9'}, set(out_of_scope_dict))
+        self.assertEqual(
+            'https://example\\.com/ignored', out_of_scope_dict['10055-8'][0].pattern)
 
 
     def test_is_in_scope(self):
-        pass
+        out_of_scope_dict = {
+            '10055-7': [re.compile(r'https://example\.com/subrule')],
+            '10055': [re.compile(r'https://example\.com/parent')],
+            '*': [re.compile(r'https://example\.com/global')],
+        }
+
+        self.assertFalse(
+            zap_common.is_in_scope('10055', 'https://example.com/subrule', out_of_scope_dict, '10055-7'))
+        self.assertTrue(
+            zap_common.is_in_scope('10055', 'https://example.com/subrule', out_of_scope_dict, '10055-8'))
+        self.assertFalse(
+            zap_common.is_in_scope('10055', 'https://example.com/parent', out_of_scope_dict, '10055-8'))
+        self.assertFalse(
+            zap_common.is_in_scope('10055', 'https://example.com/global', out_of_scope_dict, '10055-8'))
+        self.assertTrue(
+            zap_common.is_in_scope('10055', 'https://example.com/other', out_of_scope_dict))
+        self.assertTrue(
+            zap_common.is_in_scope('10055', 'https://example.com/other', out_of_scope_dict, None))
 
 
-    def zap_get_alerts(self):
-        pass
+    def test_zap_get_alerts_applies_out_of_scope_to_sub_rule(self):
+        alerts = [
+            {
+                'pluginId': '10055',
+                'alertRef': '10055-7',
+                'url': 'https://example.com/ignored',
+                'risk': 'Medium',
+            },
+            {
+                'pluginId': '10055',
+                'alertRef': '10055-8',
+                'url': 'https://example.com/ignored',
+                'risk': 'Medium',
+            },
+        ]
+        zap = Mock()
+        zap.core.alerts.side_effect = [alerts, []]
+        out_of_scope_dict = {'10055-7': [re.compile(r'https://example\.com/ignored')]}
+
+        alert_dict = zap_common.zap_get_alerts(zap, 'https://example.com', [], out_of_scope_dict)
+
+        self.assertEqual(['10055-8'], [alert['alertRef'] for alert in alert_dict['10055']])
+
+
+    def test_group_alerts_by_rule(self):
+        parent_alert = {'pluginId': '10055', 'alertRef': '10055-1'}
+        sub_rule_alert = {'pluginId': '10055', 'alertRef': '10055-7'}
+        alert_without_ref = {'pluginId': '10055'}
+        alert_dict = {'10055': [parent_alert, sub_rule_alert, alert_without_ref]}
+
+        grouped_alerts = zap_common.group_alerts_by_rule(alert_dict, {'10055-7': 'IGNORE'})
+
+        self.assertEqual(
+            {'10055': [parent_alert, alert_without_ref], '10055-7': [sub_rule_alert]},
+            grouped_alerts)
+
+
+    def test_group_alerts_by_rule_without_sub_rule_config(self):
+        alert_dict = {'10055': [{'pluginId': '10055', 'alertRef': '10055-7'}]}
+
+        self.assertIs(alert_dict, zap_common.group_alerts_by_rule(alert_dict, {'10055': 'IGNORE'}))
+
+
+    def test_has_rule_alerts(self):
+        alert_dict = {'10055-7': [{'pluginId': '10055', 'alertRef': '10055-7'}]}
+
+        self.assertTrue(zap_common.has_rule_alerts(alert_dict, '10055'))
+        self.assertFalse(zap_common.has_rule_alerts(alert_dict, '10056'))
+
+
+    def test_is_sub_rule_id(self):
+        for rule_id in ['10055-7', '1-0']:
+            with self.subTest(rule_id=rule_id):
+                self.assertTrue(zap_common.is_sub_rule_id(rule_id))
+
+        for rule_id in ['10055', '-1', '10055-', '10055-a', '10055-7-1', '*', '']:
+            with self.subTest(rule_id=rule_id):
+                self.assertFalse(zap_common.is_sub_rule_id(rule_id))
+
+
+    def test_has_sub_rule_config(self):
+        self.assertTrue(zap_common.has_sub_rule_config({'10055-7': 'IGNORE'}, {}))
+        self.assertTrue(zap_common.has_sub_rule_config({}, {'10055-7': []}))
+        self.assertFalse(zap_common.has_sub_rule_config({'10055': 'IGNORE'}, {'*': []}))
+
+
+    def test_print_rules_applies_level_to_sub_rule(self):
+        alert_dict = {
+            '10055': [{'pluginId': '10055', 'alertRef': '10055-1', 'alert': 'CSP'}],
+            '10055-7': [{'pluginId': '10055', 'alertRef': '10055-7', 'alert': 'CSP'}],
+        }
+        config_dict = {'10055-7': 'IGNORE'}
+
+        with patch('builtins.print'):
+            ignore_count, _ = zap_common.print_rules(
+                Mock(), alert_dict, 'IGNORE', config_dict, {}, 0,
+                zap_common.inc_ignore_rules, True, False, {})
+            warn_count, _ = zap_common.print_rules(
+                Mock(), alert_dict, 'WARN', config_dict, {}, 0,
+                zap_common.inc_warn_rules, True, False, {})
+
+        self.assertEqual(1, ignore_count)
+        self.assertEqual(1, warn_count)
 
 
     def test_zap_spider(self):

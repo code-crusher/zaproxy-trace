@@ -176,8 +176,19 @@ def load_config(config, config_dict, config_msg, out_of_scope_dict):
     logging.debug('Loaded config: {0}'.format(config_dict))
 
 
-def is_in_scope(plugin_id, url, out_of_scope_dict):
-    """ Returns True if the url is in scope for the specified plugin_id """
+def is_sub_rule_id(rule_id):
+    """ Returns True if the rule ID identifies a scan sub-rule, e.g. 10055-7 """
+    parts = rule_id.split('-', 1)
+    return len(parts) == 2 and all(part.isdigit() for part in parts)
+
+
+def has_sub_rule_config(config_dict, out_of_scope_dict):
+    """ Returns True if any of the configured rule IDs is a scan sub-rule """
+    return any(is_sub_rule_id(rule_id) for rule_id in list(config_dict) + list(out_of_scope_dict))
+
+
+def is_in_scope(plugin_id, url, out_of_scope_dict, alert_ref=None):
+    """ Returns True if the url is in scope for the specified plugin_id or alert_ref """
     if '*' in out_of_scope_dict:
         for oos_prog in out_of_scope_dict['*']:
             #print('OOS Compare ' + oos_url + ' vs ' + 'url)
@@ -185,24 +196,48 @@ def is_in_scope(plugin_id, url, out_of_scope_dict):
                 #print('OOS Ignoring ' + str(plugin_id) + ' ' + url)
                 return False
         #print 'Not in * dict'
-    if plugin_id in out_of_scope_dict:
-        for oos_prog in out_of_scope_dict[plugin_id]:
+    # Sub-rules are reported with their own reference, e.g. 10055-7
+    for rule_id in (plugin_id, alert_ref):
+        for oos_prog in out_of_scope_dict.get(rule_id, []):
             #print('OOS Compare ' + oos_url + ' vs ' + 'url)
             if oos_prog.match(url):
-                #print('OOS Ignoring ' + str(plugin_id) + ' ' + url)
+                #print('OOS Ignoring ' + str(rule_id) + ' ' + url)
                 return False
     #print 'Not in ' + plugin_id + ' dict'
     return True
 
 
-def print_rule(zap, action, alert_list, detailed_output, user_msg, in_progress_issues):
-    id = alert_list[0].get('pluginId')
-    if id in in_progress_issues:
-        print (action + '-IN_PROGRESS: ' + alert_list[0].get('alert') + ' [' + id + '] x ' + str(len(alert_list)) + ' ' + user_msg)
-        if in_progress_issues[id]["link"]:
-            print ('\tProgress link: ' + in_progress_issues[id]["link"])
+def group_alerts_by_rule(alert_dict, config_dict):
+    """ Groups the alerts of the configured sub-rules separately from their parent rule """
+    sub_rule_ids = {rule_id for rule_id in config_dict if is_sub_rule_id(rule_id)}
+    if not sub_rule_ids:
+        return alert_dict
+
+    grouped_alerts = {}
+    for plugin_id, alerts in alert_dict.items():
+        for alert in alerts:
+            alert_ref = alert.get('alertRef')
+            rule_id = alert_ref if alert_ref in sub_rule_ids else plugin_id
+            grouped_alerts.setdefault(rule_id, []).append(alert)
+    return grouped_alerts
+
+
+def has_rule_alerts(alert_dict, plugin_id):
+    """ Returns True if there are alerts for the rule or any of its sub-rules """
+    if plugin_id in alert_dict:
+        return True
+    return any(alerts and alerts[0].get('pluginId') == plugin_id for alerts in alert_dict.values())
+
+
+def print_rule(zap, action, rule_id, alert_list, detailed_output, user_msg, in_progress_issues):
+    plugin_id = alert_list[0].get('pluginId')
+    progress_id = rule_id if rule_id in in_progress_issues else plugin_id
+    if progress_id in in_progress_issues:
+        print (action + '-IN_PROGRESS: ' + alert_list[0].get('alert') + ' [' + rule_id + '] x ' + str(len(alert_list)) + ' ' + user_msg)
+        if in_progress_issues[progress_id]["link"]:
+            print ('\tProgress link: ' + in_progress_issues[progress_id]["link"])
     else:
-        print (action + '-NEW: ' + alert_list[0].get('alert') + ' [' + id + '] x ' + str(len(alert_list)) + ' ' + user_msg)
+        print (action + '-NEW: ' + alert_list[0].get('alert') + ' [' + rule_id + '] x ' + str(len(alert_list)) + ' ' + user_msg)
     if detailed_output:
         # Show (up to) first 5 urls, along with the response code (which we have to perform another request for)
         for alert in alert_list[0:5]:
@@ -221,8 +256,9 @@ def print_rules(zap, alert_dict, level, config_dict, config_msg, min_level, inc_
             if key in config_msg:
                 user_msg = config_msg[key]
             if min_level <= zap_conf_lvls.index(level):
-                print_rule(zap, level, alert_list, detailed_output, user_msg, in_progress_issues)
-            if key in in_progress_issues:
+                print_rule(zap, level, key, alert_list, detailed_output, user_msg, in_progress_issues)
+            plugin_id = alert_list[0].get('pluginId')
+            if key in in_progress_issues or plugin_id in in_progress_issues:
                 inprog_count += 1
             else:
                 count += 1
@@ -527,7 +563,7 @@ def zap_get_alerts(zap, baseurl, ignore_scan_rules, out_of_scope_dict):
             plugin_id = alert.get('pluginId')
             if plugin_id in ignore_scan_rules:
                 continue
-            if not is_in_scope(plugin_id, alert.get('url'), out_of_scope_dict):
+            if not is_in_scope(plugin_id, alert.get('url'), out_of_scope_dict, alert.get('alertRef')):
                 continue
             if alert.get('risk') == 'Informational':
                 # Ignore all info alerts - some of them may have been downgraded by security annotations

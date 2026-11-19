@@ -1,6 +1,9 @@
 # Changelog
 All notable changes to the docker containers will be documented in this file.
 
+### 2026-11-19
+- Added support for scan sub-rule IDs, e.g. `10055-7`, in the packaged scan `IGNORE` and `OUTOFSCOPE` configuration (Issue 9394).
+
 ### 2026-10-28
 - Updated to use Webswing 26.
 

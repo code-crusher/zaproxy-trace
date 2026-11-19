@@ -421,6 +421,11 @@ def main(argv):
             logging.warning('Failed to read configs from ' + config_url)
             sys.exit(3)
 
+    if has_sub_rule_config(config_dict, out_of_scope_dict):
+        # The Automation Framework summary and alert filters only accept integer rule IDs
+        # so fall back to the API implementation, which matches the alertRef of sub-rules.
+        af_supported, no_af_reason = add_af_unsupported(af_supported, no_af_reason, af_unsupported_opts, 'sub-rule IDs', 'subrule')
+
     if progress_file:
         # load progress file from filestore
         with open(os.path.join(base_dir, progress_file)) as f:
@@ -597,6 +602,7 @@ def main(argv):
                 print('Total of ' + str(num_urls) + ' URLs')
 
             alert_dict = zap_get_alerts(zap, target, ignore_scan_rules, out_of_scope_dict)
+            alert_dict = group_alerts_by_rule(alert_dict, config_dict)
 
             all_rules = zap.pscan.scanners
             all_dict = {}
@@ -622,7 +628,7 @@ def main(argv):
                 plugin_id = rule.get('id')
                 if plugin_id in ignore_scan_rules:
                     continue
-                if (plugin_id not in alert_dict):
+                if not has_rule_alerts(alert_dict, plugin_id):
                     pass_dict[plugin_id] = rule.get('name')
 
             if min_level == zap_conf_lvls.index("PASS") and detailed_output:
