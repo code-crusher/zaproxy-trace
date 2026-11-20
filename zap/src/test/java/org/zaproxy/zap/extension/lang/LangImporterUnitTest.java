@@ -23,11 +23,22 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.regex.Pattern;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.parosproxy.paros.Constant;
 
 /** Unit test for {@link LangImporter}. */
 class LangImporterUnitTest {
+
+    private static final String MSG_SUCCESS = "options.lang.importer.dialog.message.success";
+    private static final String MSG_ERROR = "options.lang.importer.dialog.message.error";
 
     @Test
     void shouldIncludeMessagesFiles() {
@@ -58,5 +69,93 @@ class LangImporterUnitTest {
         for (String file : resourceFiles) {
             assertThat(file, pattern.matcher(file).matches(), is(equalTo(false)));
         }
+    }
+
+    @Test
+    void shouldImportMessagesFileWithinInstallDirectory(@TempDir Path tempDir) throws Exception {
+        // Given
+        Path installDir = Files.createDirectories(tempDir.resolve("install"));
+        Files.createDirectories(installDir.resolve(Constant.LANG_DIR));
+        Path languagePack =
+                createLanguagePack(
+                        tempDir, Constant.LANG_DIR + "/Messages_en_GB.properties", "translated");
+        // When
+        String message = importLanguagePack(installDir, languagePack);
+        // Then
+        assertThat(message, is(equalTo(MSG_SUCCESS)));
+        assertThat(
+                Files.readString(
+                        installDir.resolve(Constant.LANG_DIR).resolve("Messages_en_GB.properties")),
+                is(equalTo("translated")));
+    }
+
+    @Test
+    void shouldNotImportMessagesFileOutsideInstallDirectory(@TempDir Path tempDir)
+            throws Exception {
+        // Given
+        Path installDir = Files.createDirectories(tempDir.resolve("install"));
+        Path outsideDir = Files.createDirectories(tempDir.resolve("outside"));
+        Path outsideFile = outsideDir.resolve("Messages.properties");
+        Files.writeString(outsideFile, "original");
+        Path languagePack =
+                createLanguagePack(tempDir, "../outside/Messages.properties", "overwritten");
+        // When
+        String message = importLanguagePack(installDir, languagePack);
+        // Then
+        assertThat(message, is(equalTo(MSG_ERROR)));
+        assertThat(Files.readString(outsideFile), is(equalTo("original")));
+    }
+
+    @Test
+    void shouldNotImportMessagesFileWithAbsolutePath(@TempDir Path tempDir) throws Exception {
+        // Given
+        Path installDir = Files.createDirectories(tempDir.resolve("install"));
+        Path outsideDir = Files.createDirectories(tempDir.resolve("outside"));
+        Path outsideFile = outsideDir.resolve("Messages.properties");
+        Path languagePack = createLanguagePack(tempDir, outsideFile.toString(), "overwritten");
+        // When
+        String message = importLanguagePack(installDir, languagePack);
+        // Then
+        assertThat(message, is(equalTo(MSG_ERROR)));
+        assertThat(Files.exists(outsideFile), is(equalTo(false)));
+    }
+
+    @Test
+    void shouldNotImportMessagesFileInSiblingDirectoryWithSamePrefix(@TempDir Path tempDir)
+            throws Exception {
+        // Given
+        Path installDir = Files.createDirectories(tempDir.resolve("install"));
+        Path outsideDir = Files.createDirectories(tempDir.resolve("install-sibling"));
+        Path outsideFile = outsideDir.resolve("Messages.properties");
+        Files.writeString(outsideFile, "original");
+        Path languagePack =
+                createLanguagePack(
+                        tempDir, "../install-sibling/Messages.properties", "overwritten");
+        // When
+        String message = importLanguagePack(installDir, languagePack);
+        // Then
+        assertThat(message, is(equalTo(MSG_ERROR)));
+        assertThat(Files.readString(outsideFile), is(equalTo("original")));
+    }
+
+    private static String importLanguagePack(Path installDir, Path languagePack) {
+        String originalInstallDir = Constant.getZapInstall();
+        Constant.setZapInstall(installDir.toString());
+        try {
+            return LangImporter.importLanguagePack(languagePack.toString());
+        } finally {
+            Constant.setZapInstall(originalInstallDir);
+        }
+    }
+
+    private static Path createLanguagePack(Path directory, String entryName, String contents)
+            throws IOException {
+        Path languagePack = directory.resolve("language-pack.zaplang");
+        try (ZipOutputStream zip = new ZipOutputStream(Files.newOutputStream(languagePack))) {
+            zip.putNextEntry(new ZipEntry(entryName));
+            zip.write(contents.getBytes(StandardCharsets.UTF_8));
+            zip.closeEntry();
+        }
+        return languagePack;
     }
 }
