@@ -53,6 +53,8 @@
 // ZAP: 2020/11/26 Use Log4j 2 classes for logging.
 // ZAP: 2022/09/21 Use format specifiers instead of concatenation when logging.
 // ZAP: 2023/01/10 Tidy up logger.
+// ZAP: 2026/11/20 Issue 9445: Restore the DB connection when persisting/snapshotting the session
+// fails, deducing the code that copies the DB files.
 package org.parosproxy.paros.model;
 
 import java.io.File;
@@ -290,52 +292,42 @@ public class Model {
 
     // TODO disable for non file based sessions
     protected void copySessionDb(String currentFile, String destFile) throws Exception {
-
-        // ZAP: Changed to call the method close(boolean, boolean).
-        getDb().close(false, false);
-
-        // copy session related files to the path specified
-        FileCopier copier = new FileCopier();
-
-        // ZAP: Check if files exist.
-        File fileIn1 = new File(currentFile + ".data");
-        if (fileIn1.exists()) {
-            File fileOut1 = new File(destFile + ".data");
-            copier.copy(fileIn1, fileOut1);
+        // ZAP: Restore the DB connection if the copy fails (Issue 9445).
+        try {
+            closeAndCopySessionDbFiles(currentFile, destFile);
+            getDb().open(destFile);
+        } catch (Exception e) {
+            restoreDbConnection(currentFile, e);
         }
-
-        File fileIn2 = new File(currentFile + ".script");
-        if (fileIn2.exists()) {
-            File fileOut2 = new File(destFile + ".script");
-            copier.copy(fileIn2, fileOut2);
-        }
-
-        File fileIn3 = new File(currentFile + ".properties");
-        if (fileIn3.exists()) {
-            File fileOut3 = new File(destFile + ".properties");
-            copier.copy(fileIn3, fileOut3);
-        }
-
-        File fileIn4 = new File(currentFile + ".backup");
-        if (fileIn4.exists()) {
-            File fileOut4 = new File(destFile + ".backup");
-            copier.copy(fileIn4, fileOut4);
-        }
-
-        // ZAP: Handle the "lobs" file.
-        File lobsFile = new File(currentFile + ".lobs");
-        if (lobsFile.exists()) {
-            File newLobsFile = new File(destFile + ".lobs");
-            copier.copy(lobsFile, newLobsFile);
-        }
-
-        getDb().open(destFile);
     }
 
     // TODO disable for non file based sessions
     protected void snapshotSessionDb(String currentFile, String destFile) throws Exception {
         LOGGER.debug("snapshotSessionDb {} -> {}", currentFile, destFile);
 
+        if (currentFile.length() == 0) {
+            LOGGER.debug("snapshotSessionDb using {} -> {}", currentDBNameUntitled, destFile);
+            currentFile = currentDBNameUntitled;
+        }
+
+        // ZAP: Restore the DB connection if the copy fails (Issue 9445).
+        try {
+            closeAndCopySessionDbFiles(currentFile, destFile);
+            getDb().open(currentFile);
+        } catch (Exception e) {
+            restoreDbConnection(currentFile, e);
+        }
+    }
+
+    /**
+     * Closes the database and copies its files to the given path.
+     *
+     * @param currentFile the path of the database to copy.
+     * @param destFile the path where to copy the database files.
+     * @throws Exception if an error occurred while closing or copying the database.
+     */
+    // ZAP: Added method, from copySessionDb() and snapshotSessionDb() (Issue 9445).
+    private void closeAndCopySessionDbFiles(String currentFile, String destFile) throws Exception {
         // ZAP: Changed to call the method close(boolean, boolean).
         getDb().close(false, false);
 
@@ -373,13 +365,40 @@ public class Model {
             File newLobsFile = new File(destFile + ".lobs");
             copier.copy(lobsFile, newLobsFile);
         }
+    }
 
-        if (currentFile.length() == 0) {
-            LOGGER.debug("snapshotSessionDb using {} -> {}", currentDBNameUntitled, destFile);
-            currentFile = currentDBNameUntitled;
+    /**
+     * Restores the connection to the given (current) database, so the running session remains
+     * usable, and rethrows the given exception that failed the persist/snapshot of the session.
+     *
+     * <p>The persist/snapshot of the session might fail after the database was closed, for example,
+     * if the copied database cannot be reopened because it is corrupt (as reported by HSQLDB when
+     * reading an index root, Issue 9445). Previously the running session was left without a usable
+     * database connection.
+     *
+     * @param currentFile the path of the current database.
+     * @param e the exception that failed the persist/snapshot of the session.
+     * @throws Exception the given exception, with the restore failure added as suppressed, if
+     *     restoring the connection also failed.
+     */
+    // ZAP: Added method (Issue 9445).
+    private void restoreDbConnection(String currentFile, Exception e) throws Exception {
+        LOGGER.error(
+                "Failed to persist the session database, restoring the connection to {}",
+                currentFile,
+                e);
+        try {
+            getDb().open(currentFile);
+        } catch (Exception restoreException) {
+            LOGGER.error(
+                    "Failed to restore the connection to the database {}",
+                    currentFile,
+                    restoreException);
+            if (restoreException != e) {
+                e.addSuppressed(restoreException);
+            }
         }
-
-        getDb().open(currentFile);
+        throw e;
     }
 
     /** This method should typically only be called from the Control class */
