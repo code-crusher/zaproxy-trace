@@ -21,7 +21,7 @@ package org.parosproxy.paros.core.scanner;
 
 import java.util.Date;
 import java.util.Map;
-import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration2.Configuration;
 import org.parosproxy.paros.network.HttpMessage;
 import org.zaproxy.zap.control.AddOn;
 import org.zaproxy.zap.control.AddOn.Status;

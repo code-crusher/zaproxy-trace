@@ -161,10 +161,11 @@ import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.ConversionException;
-import org.apache.commons.configuration.HierarchicalConfiguration;
-import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.commons.configuration2.HierarchicalConfiguration;
+import org.apache.commons.configuration2.XMLConfiguration;
+import org.apache.commons.configuration2.ex.ConfigurationException;
+import org.apache.commons.configuration2.ex.ConversionException;
+import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.Configurator;
@@ -531,7 +532,7 @@ public final class Constant {
      * @param config the configuration to change
      * @throws ConfigurationException if an error occurred while saving the configuration.
      */
-    private static void setLatestVersion(XMLConfiguration config) throws ConfigurationException {
+    private static void setLatestVersion(ZapXmlConfiguration config) throws ConfigurationException {
         config.setProperty(VERSION_ELEMENT, VERSION_TAG);
         config.save();
     }
@@ -672,8 +673,7 @@ public final class Constant {
 
                 // ZAP: Changed to use ZapXmlConfiguration, to enforce the same character encoding
                 // when reading/writing configurations.
-                XMLConfiguration config = new ZapXmlConfiguration(FILE_CONFIG);
-                config.setAutoSave(false);
+                ZapXmlConfiguration config = new ZapXmlConfiguration(FILE_CONFIG);
 
                 long ver = config.getLong(VERSION_ELEMENT);
 
@@ -882,7 +882,6 @@ public final class Constant {
             }
             if (lang == null || lang.isEmpty()) {
                 XMLConfiguration config = new ZapXmlConfiguration(FILE_CONFIG);
-                config.setAutoSave(false);
 
                 lang = config.getString(OptionsParamView.LOCALE, OptionsParamView.DEFAULT_LOCALE);
                 if (lang.length() == 0) {
@@ -974,7 +973,6 @@ public final class Constant {
         // ZAP: Changed to use ZapXmlConfiguration, to enforce the same character encoding when
         // reading/writing configurations.
         XMLConfiguration newConfig = new ZapXmlConfiguration(getUrlDefaultConfigFile());
-        newConfig.setAutoSave(false);
 
         copyAllProperties(newConfig, config, "pscans");
     }
@@ -984,7 +982,6 @@ public final class Constant {
         // ZAP: Changed to use ZapXmlConfiguration, to enforce the same character encoding when
         // reading/writing configurations.
         XMLConfiguration newConfig = new ZapXmlConfiguration(getUrlDefaultConfigFile());
-        newConfig.setAutoSave(false);
 
         copyProperty(newConfig, config, "view.brkPanelView");
         copyProperty(newConfig, config, "view.showMainToolbar");
@@ -1281,7 +1278,7 @@ public final class Constant {
     }
 
     static void upgradeFrom2_14_0(XMLConfiguration config) throws ConfigurationException {
-        List<HierarchicalConfiguration> existingTagScanners =
+        List<HierarchicalConfiguration<ImmutableNode>> existingTagScanners =
                 config.configurationsAt("pscans.autoTagScanners.scanner");
         List<Object> existingNames = config.getList("pscans.autoTagScanners.scanner.name");
 
@@ -1348,7 +1345,8 @@ public final class Constant {
 
     private static void updatePscanTagMailtoPattern(XMLConfiguration config) {
         String autoTagScannersKey = "pscans.autoTagScanners.scanner";
-        List<HierarchicalConfiguration> tagScanners = config.configurationsAt(autoTagScannersKey);
+        List<HierarchicalConfiguration<ImmutableNode>> tagScanners =
+                config.configurationsAt(autoTagScannersKey);
         String badPattern = "<.*href\\s*['\"]?mailto:";
         String goodPattern = "<.*href\\s*=\\s*['\"]?mailto:";
 

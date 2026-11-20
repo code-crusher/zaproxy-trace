@@ -113,7 +113,7 @@ import java.util.TreeSet;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import javax.swing.tree.TreeNode;
-import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.commons.httpclient.URI;
 import org.apache.commons.httpclient.URIException;
 import org.apache.logging.log4j.LogManager;

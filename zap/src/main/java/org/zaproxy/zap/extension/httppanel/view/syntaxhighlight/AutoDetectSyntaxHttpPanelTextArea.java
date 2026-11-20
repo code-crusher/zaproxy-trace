@@ -19,7 +19,7 @@
  */
 package org.zaproxy.zap.extension.httppanel.view.syntaxhighlight;
 
-import org.apache.commons.configuration.FileConfiguration;
+import org.apache.commons.configuration2.FileBasedConfiguration;
 import org.parosproxy.paros.network.HttpMessage;
 import org.zaproxy.zap.extension.httppanel.Message;
 
@@ -66,7 +66,7 @@ public abstract class AutoDetectSyntaxHttpPanelTextArea extends HttpPanelSyntaxH
     protected abstract String detectSyntax(HttpMessage httpMessage);
 
     @Override
-    public void loadConfiguration(String key, FileConfiguration fileConfiguration) {
+    public void loadConfiguration(String key, FileBasedConfiguration fileConfiguration) {
         super.loadConfiguration(key, fileConfiguration);
 
         setAutoDetectSyntax(
@@ -74,7 +74,7 @@ public abstract class AutoDetectSyntaxHttpPanelTextArea extends HttpPanelSyntaxH
     }
 
     @Override
-    public void saveConfiguration(String key, FileConfiguration fileConfiguration) {
+    public void saveConfiguration(String key, FileBasedConfiguration fileConfiguration) {
         super.saveConfiguration(key, fileConfiguration);
 
         fileConfiguration.setProperty(key + "syntax." + AUTO_DETECT, isAutoDetectSyntax);

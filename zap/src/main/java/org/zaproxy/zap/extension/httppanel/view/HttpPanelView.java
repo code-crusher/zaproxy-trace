@@ -20,7 +20,7 @@
 package org.zaproxy.zap.extension.httppanel.view;
 
 import javax.swing.JComponent;
-import org.apache.commons.configuration.FileConfiguration;
+import org.apache.commons.configuration2.FileBasedConfiguration;
 import org.zaproxy.zap.extension.httppanel.InvalidMessageDataException;
 import org.zaproxy.zap.extension.httppanel.Message;
 
@@ -57,7 +57,7 @@ public interface HttpPanelView {
 
     void setParentConfigurationKey(String configurationKey);
 
-    void loadConfiguration(FileConfiguration configuration);
+    void loadConfiguration(FileBasedConfiguration configuration);
 
-    void saveConfiguration(FileConfiguration configuration);
+    void saveConfiguration(FileBasedConfiguration configuration);
 }

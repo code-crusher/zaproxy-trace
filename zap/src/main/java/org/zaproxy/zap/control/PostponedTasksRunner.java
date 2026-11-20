@@ -27,7 +27,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import org.apache.commons.configuration.HierarchicalConfiguration;
+import org.apache.commons.configuration2.HierarchicalConfiguration;
+import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.parosproxy.paros.Constant;
@@ -56,10 +57,11 @@ class PostponedTasksRunner {
     }
 
     private static List<Task> readTasks(ZapXmlConfiguration config) {
-        List<HierarchicalConfiguration> savedTasks = config.configurationsAt(TASKS_KEY);
+        List<HierarchicalConfiguration<ImmutableNode>> savedTasks =
+                config.configurationsAt(TASKS_KEY);
 
         List<Task> tasks = new ArrayList<>(0);
-        for (HierarchicalConfiguration savedTask : savedTasks) {
+        for (HierarchicalConfiguration<ImmutableNode> savedTask : savedTasks) {
             Task task = createTask(savedTask);
             if (task != null) {
                 tasks.add(task);
@@ -107,7 +109,7 @@ class PostponedTasksRunner {
         }
     }
 
-    private static Task createTask(HierarchicalConfiguration data) {
+    private static Task createTask(HierarchicalConfiguration<ImmutableNode> data) {
         Task.Type type = readType(data);
         if (type == null) {
             return null;
@@ -126,7 +128,7 @@ class PostponedTasksRunner {
         }
     }
 
-    private static Task.Type readType(HierarchicalConfiguration savedData) {
+    private static Task.Type readType(HierarchicalConfiguration<ImmutableNode> savedData) {
         String typeName = savedData.getString(Task.TYPE_KEY, "");
         if (typeName.isBlank()) {
             return null;
@@ -217,7 +219,7 @@ class PostponedTasksRunner {
                     addOn.getFile().toPath().toAbsolutePath().normalize().toString());
         }
 
-        static UninstallAddOnTask create(HierarchicalConfiguration data) {
+        static UninstallAddOnTask create(HierarchicalConfiguration<ImmutableNode> data) {
             String path = data.getString(ADD_ON_KEY, "");
             if (path.isBlank()) {
                 return null;
@@ -272,7 +274,7 @@ class PostponedTasksRunner {
             config.setProperty(keyPrefix + FILE_KEY, file.toAbsolutePath().normalize().toString());
         }
 
-        static DeleteFileTask create(HierarchicalConfiguration data) {
+        static DeleteFileTask create(HierarchicalConfiguration<ImmutableNode> data) {
             String path = data.getString(FILE_KEY, "");
             if (path == null || path.isBlank()) {
                 return null;

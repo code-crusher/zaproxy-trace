@@ -24,7 +24,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import org.apache.commons.configuration.FileConfiguration;
+import org.apache.commons.configuration2.FileBasedConfiguration;
 import org.parosproxy.paros.Constant;
 import org.zaproxy.zap.extension.httppanel.Message;
 import org.zaproxy.zap.extension.httppanel.view.AbstractStringHttpPanelViewModel;
@@ -149,8 +149,8 @@ public class RequestPostTableView implements HttpPanelView, HttpPanelViewModelLi
     public void setParentConfigurationKey(String configurationKey) {}
 
     @Override
-    public void loadConfiguration(FileConfiguration configuration) {}
+    public void loadConfiguration(FileBasedConfiguration configuration) {}
 
     @Override
-    public void saveConfiguration(FileConfiguration configuration) {}
+    public void saveConfiguration(FileBasedConfiguration configuration) {}
 }

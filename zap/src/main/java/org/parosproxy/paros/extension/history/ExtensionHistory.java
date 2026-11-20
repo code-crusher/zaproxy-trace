@@ -116,7 +116,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
 import javax.swing.JOptionPane;
 import org.apache.commons.collections.map.ReferenceMap;
-import org.apache.commons.configuration.FileConfiguration;
+import org.apache.commons.configuration2.FileBasedConfiguration;
 import org.apache.commons.httpclient.URIException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -931,7 +931,7 @@ public class ExtensionHistory extends ExtensionAdaptor implements SessionChanged
             return;
         }
         if (hasView()) {
-            FileConfiguration config = Model.getSingleton().getOptionsParam().getConfig();
+            FileBasedConfiguration config = Model.getSingleton().getOptionsParam().getConfig();
             boolean confirmRemoval = config.getBoolean(REMOVE_CONFIRMATION_KEY, true);
 
             if (confirmRemoval) {

@@ -25,8 +25,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.HierarchicalConfiguration;
+import org.apache.commons.configuration2.HierarchicalConfiguration;
+import org.apache.commons.configuration2.ex.ConfigurationException;
+import org.apache.commons.configuration2.tree.ImmutableNode;
 
 /**
  * Support utility able to manage multiple string/regex occurrence searching inside a target content
@@ -100,7 +101,8 @@ public class ContentMatcher {
         patterns = new ArrayList<>();
 
         ZapXmlConfiguration configuration = new ZapXmlConfiguration(xmlInputStream);
-        for (HierarchicalConfiguration entry : configuration.configurationsAt(TAG_PATTERN)) {
+        for (HierarchicalConfiguration<ImmutableNode> entry :
+                configuration.configurationsAt(TAG_PATTERN)) {
             String value = entry.getString("", "");
             if (!value.isEmpty()) {
                 if (TAG_PATTERN_TYPE_REGEX.equalsIgnoreCase(entry.getString(ATTRIBUTE_TYPE))) {

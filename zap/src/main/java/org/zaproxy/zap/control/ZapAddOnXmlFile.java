@@ -22,7 +22,8 @@ package org.zaproxy.zap.control;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
-import org.apache.commons.configuration.HierarchicalConfiguration;
+import org.apache.commons.configuration2.HierarchicalConfiguration;
+import org.apache.commons.configuration2.tree.ImmutableNode;
 
 /**
  * Helper class that reads a {@link AddOn#MANIFEST_FILE_NAME manifest file}.
@@ -59,7 +60,7 @@ public class ZapAddOnXmlFile extends BaseZapAddOnXmlData {
     }
 
     @Override
-    protected void readAdditionalData(HierarchicalConfiguration zapAddOnXml) {
+    protected void readAdditionalData(HierarchicalConfiguration<ImmutableNode> zapAddOnXml) {
         ascanrules = getStrings(zapAddOnXml, ASCANRULES_ALL_ELEMENTS, ASCANRULE_ELEMENT);
         pscanrules = getStrings(zapAddOnXml, PSCANRULES_ALL_ELEMENTS, PSCANRULE_ELEMENT);
         files = getStrings(zapAddOnXml, FILES_ALL_ELEMENTS, FILE_ELEMENT);

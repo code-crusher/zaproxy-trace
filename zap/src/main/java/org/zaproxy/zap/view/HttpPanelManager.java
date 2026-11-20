@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.apache.commons.configuration.FileConfiguration;
+import org.apache.commons.configuration2.FileBasedConfiguration;
 import org.parosproxy.paros.model.Model;
 import org.zaproxy.zap.extension.httppanel.HttpPanel;
 import org.zaproxy.zap.extension.httppanel.component.HttpPanelComponentInterface;
@@ -207,7 +207,7 @@ public class HttpPanelManager {
         public void addPanel(HttpPanel panel) {
             this.panels.add(panel);
 
-            FileConfiguration fileConfiguration =
+            FileBasedConfiguration fileConfiguration =
                     Model.getSingleton().getOptionsParam().getConfig();
 
             for (HttpPanelComponentFactory componentFactory : components.values()) {
@@ -247,7 +247,7 @@ public class HttpPanelManager {
             }
             this.components.put(componentFactory.getName(), componentFactory);
 
-            FileConfiguration fileConfiguration =
+            FileBasedConfiguration fileConfiguration =
                     Model.getSingleton().getOptionsParam().getConfig();
 
             for (HttpPanel panel : panels) {
@@ -301,7 +301,7 @@ public class HttpPanelManager {
 
             componentViews.put(viewFactory.getName(), viewFactory);
 
-            FileConfiguration fileConfiguration =
+            FileBasedConfiguration fileConfiguration =
                     Model.getSingleton().getOptionsParam().getConfig();
 
             for (HttpPanel panel : panels) {

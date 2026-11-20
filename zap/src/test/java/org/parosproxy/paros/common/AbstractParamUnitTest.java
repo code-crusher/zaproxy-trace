@@ -26,8 +26,8 @@ import static org.hamcrest.Matchers.not;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.commons.configuration.FileConfiguration;
-import org.apache.commons.configuration.HierarchicalConfiguration;
+import org.apache.commons.configuration2.HierarchicalConfiguration;
+import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
@@ -64,7 +64,7 @@ class AbstractParamUnitTest {
     void shouldParseLoadedFileConfiguration() {
         // Given
         TestAbstractParam param = createTestAbstractParam();
-        FileConfiguration config = createTestConfig();
+        ZapXmlConfiguration config = createTestConfig();
         // When
         param.load(config);
         // Then
@@ -88,7 +88,7 @@ class AbstractParamUnitTest {
     void shouldHaveLoadedConfigsAfterCloning() {
         // Given
         TestAbstractParam param = createTestAbstractParam();
-        FileConfiguration config = createTestConfig();
+        ZapXmlConfiguration config = createTestConfig();
         param.load(config);
         // When
         TestAbstractParam clone = param.clone();
@@ -153,10 +153,11 @@ class AbstractParamUnitTest {
             }
 
             value = getConfig().getString(VALUE_KEY);
-            List<HierarchicalConfiguration> fields =
-                    ((HierarchicalConfiguration) getConfig()).configurationsAt(VALUES_KEY);
+            List<HierarchicalConfiguration<ImmutableNode>> fields =
+                    ((HierarchicalConfiguration<ImmutableNode>) getConfig())
+                            .configurationsAt(VALUES_KEY);
             values = new ArrayList<>(fields.size());
-            for (HierarchicalConfiguration sub : fields) {
+            for (HierarchicalConfiguration<ImmutableNode> sub : fields) {
                 values.add(sub.getString(VALUES_VALUE_KEY));
             }
         }
@@ -175,7 +176,7 @@ class AbstractParamUnitTest {
         }
     }
 
-    private static FileConfiguration createTestConfig() {
+    private static ZapXmlConfiguration createTestConfig() {
         ZapXmlConfiguration config = new ZapXmlConfiguration();
         config.setProperty(VALUE_KEY, VALUE);
         for (int i = 0, size = VALUES.size(); i < size; ++i) {

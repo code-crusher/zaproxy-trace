@@ -24,7 +24,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import org.apache.commons.configuration.FileConfiguration;
+import org.apache.commons.configuration2.FileBasedConfiguration;
 import org.zaproxy.zap.extension.httppanel.HttpPanel;
 import org.zaproxy.zap.extension.httppanel.component.HttpPanelComponentInterface;
 import org.zaproxy.zap.extension.httppanel.view.HttpPanelDefaultViewSelector;
@@ -46,7 +46,7 @@ public class SelectMessageLocationsPanel extends HttpPanel
 
     private static final long serialVersionUID = -1511437565770653938L;
 
-    private final FileConfiguration fileConfiguration;
+    private final FileBasedConfiguration fileConfiguration;
     private final Map<MessageLocationProducer, MessageLocationHighlightsManager> highlightsManagers;
 
     private FocusListenerCollection focusListeners;
@@ -75,7 +75,7 @@ public class SelectMessageLocationsPanel extends HttpPanel
 
     @Override
     public void addComponent(
-            HttpPanelComponentInterface component, FileConfiguration fileConfiguration) {
+            HttpPanelComponentInterface component, FileBasedConfiguration fileConfiguration) {
         // User another file configuration, no need to persist the options
         super.addComponent(component, this.fileConfiguration);
     }
@@ -85,7 +85,7 @@ public class SelectMessageLocationsPanel extends HttpPanel
             String componentName,
             HttpPanelView view,
             Object options,
-            FileConfiguration fileConfiguration) {
+            FileBasedConfiguration fileConfiguration) {
         if (!(view instanceof MessageLocationProducer)) {
             return;
         }

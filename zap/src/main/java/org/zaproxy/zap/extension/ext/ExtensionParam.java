@@ -23,8 +23,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.apache.commons.configuration.ConversionException;
-import org.apache.commons.configuration.HierarchicalConfiguration;
+import org.apache.commons.configuration2.HierarchicalConfiguration;
+import org.apache.commons.configuration2.ex.ConversionException;
+import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.parosproxy.paros.common.AbstractParam;
@@ -61,10 +62,11 @@ public class ExtensionParam extends AbstractParam {
     @Override
     protected void parse() {
         try {
-            List<HierarchicalConfiguration> fields =
-                    ((HierarchicalConfiguration) getConfig()).configurationsAt(ALL_EXTENSIONS_KEY);
+            List<HierarchicalConfiguration<ImmutableNode>> fields =
+                    ((HierarchicalConfiguration<ImmutableNode>) getConfig())
+                            .configurationsAt(ALL_EXTENSIONS_KEY);
             Map<String, Boolean> extensions = new HashMap<>();
-            for (HierarchicalConfiguration sub : fields) {
+            for (HierarchicalConfiguration<ImmutableNode> sub : fields) {
                 if (!sub.getBoolean(EXTENSION_ENABLED_KEY, true)) {
                     extensions.put(sub.getString(EXTENSION_NAME_KEY, ""), Boolean.FALSE);
                 }
@@ -115,7 +117,7 @@ public class ExtensionParam extends AbstractParam {
             throw new IllegalArgumentException("Parameter extensionsState must not be null.");
         }
 
-        ((HierarchicalConfiguration) getConfig()).clearTree(ALL_EXTENSIONS_KEY);
+        ((HierarchicalConfiguration<ImmutableNode>) getConfig()).clearTree(ALL_EXTENSIONS_KEY);
         int enabledCount = 0;
         for (Map.Entry<String, Boolean> entry : extensionsState.entrySet()) {
             if (entry.getKey() == null || entry.getValue() == null) {

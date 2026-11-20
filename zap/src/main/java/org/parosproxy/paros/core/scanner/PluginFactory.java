@@ -75,10 +75,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
-import org.apache.commons.configuration.BaseConfiguration;
-import org.apache.commons.configuration.Configuration;
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.HierarchicalConfiguration;
+import org.apache.commons.configuration2.BaseConfiguration;
+import org.apache.commons.configuration2.BaseHierarchicalConfiguration;
+import org.apache.commons.configuration2.Configuration;
+import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.parosproxy.paros.core.scanner.Plugin.AlertThreshold;
@@ -106,9 +106,7 @@ public class PluginFactory {
 
     public PluginFactory() {
         super();
-        HierarchicalConfiguration configuration = new HierarchicalConfiguration();
-        configuration.setDelimiterParsingDisabled(true);
-        config = configuration;
+        config = new BaseHierarchicalConfiguration();
     }
 
     /**

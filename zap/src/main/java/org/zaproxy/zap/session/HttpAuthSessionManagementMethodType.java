@@ -21,8 +21,8 @@ package org.zaproxy.zap.session;
 
 import java.util.List;
 import net.sf.json.JSONObject;
-import org.apache.commons.configuration.Configuration;
-import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.configuration2.Configuration;
+import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.commons.httpclient.HttpState;
 import org.parosproxy.paros.Constant;
 import org.parosproxy.paros.db.DatabaseException;

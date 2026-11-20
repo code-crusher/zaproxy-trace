@@ -21,8 +21,9 @@ package org.zaproxy.zap.extension.pscan;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.commons.configuration.ConversionException;
-import org.apache.commons.configuration.HierarchicalConfiguration;
+import org.apache.commons.configuration2.HierarchicalConfiguration;
+import org.apache.commons.configuration2.ex.ConversionException;
+import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.parosproxy.paros.Constant;
@@ -100,12 +101,12 @@ public class PassiveScanParam extends AbstractParam {
     @Override
     protected void parse() {
         try {
-            List<HierarchicalConfiguration> fields =
-                    ((HierarchicalConfiguration) getConfig())
+            List<HierarchicalConfiguration<ImmutableNode>> fields =
+                    ((HierarchicalConfiguration<ImmutableNode>) getConfig())
                             .configurationsAt(ALL_AUTO_TAG_SCANNERS_KEY);
             this.autoTagScanners = new ArrayList<>(fields.size());
             List<String> tempListNames = new ArrayList<>(fields.size());
-            for (HierarchicalConfiguration sub : fields) {
+            for (HierarchicalConfiguration<ImmutableNode> sub : fields) {
                 String name = sub.getString(AUTO_TAG_SCANNER_NAME_KEY, "");
                 if (!"".equals(name) && !tempListNames.contains(name)) {
                     tempListNames.add(name);
@@ -151,7 +152,8 @@ public class PassiveScanParam extends AbstractParam {
             List<org.zaproxy.zap.extension.pscan.scanner.RegexAutoTagScanner> scanners) {
         this.autoTagScanners = scanners;
 
-        ((HierarchicalConfiguration) getConfig()).clearTree(ALL_AUTO_TAG_SCANNERS_KEY);
+        ((HierarchicalConfiguration<ImmutableNode>) getConfig())
+                .clearTree(ALL_AUTO_TAG_SCANNERS_KEY);
 
         for (int i = 0, size = scanners.size(); i < size; ++i) {
             String elementBaseKey = ALL_AUTO_TAG_SCANNERS_KEY + "(" + i + ").";

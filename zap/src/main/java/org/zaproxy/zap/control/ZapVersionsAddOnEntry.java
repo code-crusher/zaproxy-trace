@@ -19,7 +19,8 @@
  */
 package org.zaproxy.zap.control;
 
-import org.apache.commons.configuration.HierarchicalConfiguration;
+import org.apache.commons.configuration2.HierarchicalConfiguration;
+import org.apache.commons.configuration2.tree.ImmutableNode;
 
 /**
  * An add-on entry of {@code ZapVersions.xml} file.
@@ -50,12 +51,12 @@ public class ZapVersionsAddOnEntry extends BaseZapAddOnXmlData {
     private String date;
     private String hash;
 
-    public ZapVersionsAddOnEntry(HierarchicalConfiguration node) {
+    public ZapVersionsAddOnEntry(HierarchicalConfiguration<ImmutableNode> node) {
         super(node);
     }
 
     @Override
-    protected void readAdditionalData(HierarchicalConfiguration zapAddOnData) {
+    protected void readAdditionalData(HierarchicalConfiguration<ImmutableNode> zapAddOnData) {
         file = zapAddOnData.getString(FILE);
         size = zapAddOnData.getLong(SIZE);
         info = zapAddOnData.getString(INFO);

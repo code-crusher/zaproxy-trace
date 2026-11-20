@@ -48,8 +48,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
 import javax.swing.filechooser.FileFilter;
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.XMLPropertiesConfiguration;
+import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.logging.log4j.LogManager;
@@ -832,7 +831,7 @@ public class ExtensionAutoUpdate extends ExtensionAdaptor
     private void updateAddOnsInline(AddOnCollection aoc) {
         // Create some temporary options with the settings we need
         OptionsParamCheckForUpdates options = new OptionsParamCheckForUpdates();
-        options.load(new XMLPropertiesConfiguration());
+        options.load(new ZapXmlConfiguration());
         options.setCheckOnStart(true);
         options.setCheckAddonUpdates(true);
         options.setInstallAddonUpdates(true);

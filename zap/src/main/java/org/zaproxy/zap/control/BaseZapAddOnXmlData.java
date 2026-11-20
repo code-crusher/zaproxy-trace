@@ -27,8 +27,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.HierarchicalConfiguration;
+import org.apache.commons.configuration2.HierarchicalConfiguration;
+import org.apache.commons.configuration2.ex.ConfigurationException;
+import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -184,11 +185,11 @@ public abstract class BaseZapAddOnXmlData {
      *
      * @param zapAddOnXml the source of the {@code ZapAddOn} XML data.
      */
-    public BaseZapAddOnXmlData(HierarchicalConfiguration zapAddOnXml) {
+    public BaseZapAddOnXmlData(HierarchicalConfiguration<ImmutableNode> zapAddOnXml) {
         readDataImpl(zapAddOnXml);
     }
 
-    private void readDataImpl(HierarchicalConfiguration zapAddOnXml) {
+    private void readDataImpl(HierarchicalConfiguration<ImmutableNode> zapAddOnXml) {
         name = zapAddOnXml.getString(NAME_ELEMENT, "");
 
         String v = zapAddOnXml.getString(VERSION_ELEMENT, "1.0.0");
@@ -242,7 +243,7 @@ public abstract class BaseZapAddOnXmlData {
      *
      * @param zapAddOnData the source of the {@code ZapAddOn} XML data.
      */
-    protected void readAdditionalData(HierarchicalConfiguration zapAddOnData) {}
+    protected void readAdditionalData(HierarchicalConfiguration<ImmutableNode> zapAddOnData) {}
 
     private static Version createVersion(String version) {
         if (!version.isEmpty()) {
@@ -335,7 +336,9 @@ public abstract class BaseZapAddOnXmlData {
     }
 
     protected List<String> getStrings(
-            HierarchicalConfiguration zapAddOnXml, String element, String elementName) {
+            HierarchicalConfiguration<ImmutableNode> zapAddOnXml,
+            String element,
+            String elementName) {
         String[] fields = zapAddOnXml.getStringArray(element);
         if (fields.length == 0) {
             return Collections.emptyList();
@@ -358,8 +361,9 @@ public abstract class BaseZapAddOnXmlData {
         return strings;
     }
 
-    private Dependencies readDependencies(HierarchicalConfiguration currentNode, String element) {
-        List<HierarchicalConfiguration> dependencies =
+    private Dependencies readDependencies(
+            HierarchicalConfiguration<ImmutableNode> currentNode, String element) {
+        List<HierarchicalConfiguration<ImmutableNode>> dependencies =
                 currentNode.configurationsAt(DEPENDENCIES_ELEMENT);
         if (dependencies.isEmpty()) {
             return null;
@@ -374,9 +378,9 @@ public abstract class BaseZapAddOnXmlData {
                             + ".");
         }
 
-        HierarchicalConfiguration node = dependencies.get(0);
+        HierarchicalConfiguration<ImmutableNode> node = dependencies.get(0);
         String javaVersion = node.getString(DEPENDENCIES_JAVA_VERSION_ELEMENT, "");
-        List<HierarchicalConfiguration> fields =
+        List<HierarchicalConfiguration<ImmutableNode>> fields =
                 node.configurationsAt(DEPENDENCIES_ADDONS_ALL_ELEMENTS);
         if (fields.isEmpty()) {
             return new Dependencies(javaVersion, Collections.<AddOnDep>emptyList());
@@ -386,9 +390,10 @@ public abstract class BaseZapAddOnXmlData {
         return new Dependencies(javaVersion, addOns);
     }
 
-    private List<AddOnDep> readAddOnDependencies(List<HierarchicalConfiguration> fields) {
+    private List<AddOnDep> readAddOnDependencies(
+            List<HierarchicalConfiguration<ImmutableNode>> fields) {
         List<AddOnDep> addOns = new ArrayList<>(fields.size());
-        for (HierarchicalConfiguration sub : fields) {
+        for (HierarchicalConfiguration<ImmutableNode> sub : fields) {
             String id = sub.getString(ZAPADDON_ID_ELEMENT, "");
             if (id.isEmpty()) {
                 malformedFile("an add-on dependency has empty \"" + ZAPADDON_ID_ELEMENT + "\".");
@@ -413,8 +418,9 @@ public abstract class BaseZapAddOnXmlData {
         return addOns;
     }
 
-    private List<ExtensionWithDeps> readExtensionsWithDeps(HierarchicalConfiguration currentNode) {
-        List<HierarchicalConfiguration> extensions =
+    private List<ExtensionWithDeps> readExtensionsWithDeps(
+            HierarchicalConfiguration<ImmutableNode> currentNode) {
+        List<HierarchicalConfiguration<ImmutableNode>> extensions =
                 currentNode.configurationsAt(EXTENSIONS_ALL_ELEMENTS).stream()
                         .filter(e -> "1".equals(e.getString(EXTENSIONS_VERSION_ATT, null)))
                         .collect(Collectors.toList());
@@ -423,13 +429,13 @@ public abstract class BaseZapAddOnXmlData {
         }
 
         List<ExtensionWithDeps> extensionsWithDeps = new ArrayList<>(extensions.size());
-        for (HierarchicalConfiguration extensionNode : extensions) {
+        for (HierarchicalConfiguration<ImmutableNode> extensionNode : extensions) {
             String classname = extensionNode.getString(EXTENSION_CLASS_NAME, "");
             if (classname.isEmpty()) {
                 malformedFile("a v1 extension has empty \"" + EXTENSION_CLASS_NAME + "\".");
             }
 
-            List<HierarchicalConfiguration> fields =
+            List<HierarchicalConfiguration<ImmutableNode>> fields =
                     extensionNode.configurationsAt(EXTENSION_DEPENDENCIES);
             if (fields.isEmpty()) {
                 // Extension v1 without dependencies, handle as normal extension.
@@ -449,7 +455,7 @@ public abstract class BaseZapAddOnXmlData {
         return extensionsWithDeps;
     }
 
-    private AddOnClassnames readAddOnClassnames(HierarchicalConfiguration node) {
+    private AddOnClassnames readAddOnClassnames(HierarchicalConfiguration<ImmutableNode> node) {
         List<String> allowed =
                 getStrings(node, CLASSNAMES_ALLOWED_ALL_ELEMENTS, CLASSNAMES_ALLOWED_ELEMENT);
         List<String> restricted =

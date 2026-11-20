@@ -31,9 +31,9 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.FileConfiguration;
-import org.apache.commons.configuration.HierarchicalConfiguration;
+import org.apache.commons.configuration2.HierarchicalConfiguration;
+import org.apache.commons.configuration2.ex.ConfigurationException;
+import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.junit.jupiter.api.Test;
 import org.parosproxy.paros.Constant;
 import org.zaproxy.zap.utils.ZapXmlConfiguration;
@@ -346,7 +346,7 @@ class OptionsParamApiUnitTest {
     void shouldParseLoadedFileConfiguration() {
         // Given
         OptionsParamApi param = new OptionsParamApi();
-        FileConfiguration config = createTestConfig();
+        ZapXmlConfiguration config = createTestConfig();
         // When
         param.load(config);
         // Then
@@ -383,7 +383,7 @@ class OptionsParamApiUnitTest {
     void shouldHaveLoadedConfigsAfterCloning() {
         // Given
         OptionsParamApi param = new OptionsParamApi();
-        FileConfiguration config = createTestConfig();
+        ZapXmlConfiguration config = createTestConfig();
         param.load(config);
         // When
         OptionsParamApi clone = param.clone();
@@ -404,7 +404,7 @@ class OptionsParamApiUnitTest {
     void shouldUseDefaultValuesWhenLoadingFileConfigurationWithInvalidValues() {
         // Given
         OptionsParamApi param = new OptionsParamApi();
-        FileConfiguration config = createTestConfigWithInvalidValues();
+        ZapXmlConfiguration config = createTestConfigWithInvalidValues();
         // When
         param.load(config);
         // Then
@@ -462,10 +462,11 @@ class OptionsParamApiUnitTest {
         param.load(config);
         param.addPersistantCallBack(url1, "test1");
         param.addPersistantCallBack(url2, "test2");
-        List<HierarchicalConfiguration> fields =
-                ((HierarchicalConfiguration) config).configurationsAt(OptionsParamApi.CALLBACK_KEY);
+        List<HierarchicalConfiguration<ImmutableNode>> fields =
+                ((HierarchicalConfiguration<ImmutableNode>) config)
+                        .configurationsAt(OptionsParamApi.CALLBACK_KEY);
         Map<String, String> confMap = new HashMap<>();
-        for (HierarchicalConfiguration sub : fields) {
+        for (HierarchicalConfiguration<ImmutableNode> sub : fields) {
             confMap.put(sub.getString(".url", ""), sub.getString(".prefix", ""));
         }
 
@@ -548,7 +549,7 @@ class OptionsParamApiUnitTest {
         return param;
     }
 
-    private static FileConfiguration createTestConfig() {
+    private static ZapXmlConfiguration createTestConfig() {
         ZapXmlConfiguration config = new ZapXmlConfiguration();
         config.setProperty(OptionsParamApi.ENABLED, "false");
         config.setProperty(OptionsParamApi.SECURE_ONLY, "true");
@@ -564,7 +565,7 @@ class OptionsParamApiUnitTest {
         return config;
     }
 
-    private static FileConfiguration createTestConfigWithInvalidValues() {
+    private static ZapXmlConfiguration createTestConfigWithInvalidValues() {
         ZapXmlConfiguration config = new ZapXmlConfiguration();
         config.setProperty(OptionsParamApi.ENABLED, "Not Boolean");
         config.setProperty(OptionsParamApi.SECURE_ONLY, "Not Boolean");

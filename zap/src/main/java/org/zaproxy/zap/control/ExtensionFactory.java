@@ -32,7 +32,7 @@ import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.TreeMap;
 import java.util.Vector;
-import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration2.Configuration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.parosproxy.paros.Constant;

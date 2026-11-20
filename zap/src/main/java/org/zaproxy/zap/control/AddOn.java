@@ -44,7 +44,8 @@ import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
-import org.apache.commons.configuration.SubnodeConfiguration;
+import org.apache.commons.configuration2.HierarchicalConfiguration;
+import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -566,7 +567,7 @@ public class AddOn {
      * @throws MalformedURLException if the {@code URL} of the add-on is malformed
      * @throws IOException if an error occurs while reading the XML data
      */
-    public AddOn(String id, File baseDir, SubnodeConfiguration xmlData)
+    public AddOn(String id, File baseDir, HierarchicalConfiguration<ImmutableNode> xmlData)
             throws MalformedURLException, IOException {
         this.id = id;
         ZapVersionsAddOnEntry addOnData = new ZapVersionsAddOnEntry(xmlData);

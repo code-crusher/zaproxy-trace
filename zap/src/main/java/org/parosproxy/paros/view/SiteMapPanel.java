@@ -90,7 +90,7 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
-import org.apache.commons.configuration.FileConfiguration;
+import org.apache.commons.configuration2.FileBasedConfiguration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.parosproxy.paros.Constant;
@@ -456,7 +456,7 @@ public class SiteMapPanel extends AbstractPanel {
                                         return;
                                     }
 
-                                    FileConfiguration config =
+                                    FileBasedConfiguration config =
                                             Model.getSingleton().getOptionsParam().getConfig();
                                     boolean confirmRemoval =
                                             config.getBoolean(REMOVE_CONFIRMATION_KEY, true);

@@ -21,7 +21,7 @@ package org.zaproxy.zap.extension.httppanel.component;
 
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
-import org.apache.commons.configuration.FileConfiguration;
+import org.apache.commons.configuration2.FileBasedConfiguration;
 import org.zaproxy.zap.extension.httppanel.InvalidMessageDataException;
 import org.zaproxy.zap.extension.httppanel.Message;
 import org.zaproxy.zap.extension.httppanel.view.HttpPanelDefaultViewSelector;
@@ -62,7 +62,7 @@ public interface HttpPanelComponentInterface {
      */
     void save();
 
-    void addView(HttpPanelView view, Object options, FileConfiguration fileConfiguration);
+    void addView(HttpPanelView view, Object options, FileBasedConfiguration fileConfiguration);
 
     void removeView(String viewName, Object options);
 
@@ -78,9 +78,9 @@ public interface HttpPanelComponentInterface {
 
     void setParentConfigurationKey(String configurationKey);
 
-    void loadConfig(FileConfiguration fileConfiguration);
+    void loadConfig(FileBasedConfiguration fileConfiguration);
 
-    void saveConfig(FileConfiguration fileConfiguration);
+    void saveConfig(FileBasedConfiguration fileConfiguration);
 
     void setEditable(boolean editable);
 

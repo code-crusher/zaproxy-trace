@@ -34,8 +34,9 @@ import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
-import org.apache.commons.configuration.FileConfiguration;
-import org.apache.commons.configuration.HierarchicalConfiguration;
+import org.apache.commons.configuration2.FileBasedConfiguration;
+import org.apache.commons.configuration2.HierarchicalConfiguration;
+import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.commons.lang3.StringUtils;
 import org.jdesktop.swingx.JXTable;
 import org.jdesktop.swingx.action.AbstractActionExt;
@@ -479,7 +480,7 @@ public class ZapTable extends JXTable {
         }
 
         public static TableColumnConfiguration loadFromConfig(String persistanceIdentifier) {
-            FileConfiguration config = Model.getSingleton().getOptionsParam().getConfig();
+            FileBasedConfiguration config = Model.getSingleton().getOptionsParam().getConfig();
 
             TableColumnConfiguration tableColumnConfig = new TableColumnConfiguration();
             int i = 0;
@@ -508,7 +509,7 @@ public class ZapTable extends JXTable {
             return COLUMN_CONFIGURATION + persistanceIdentifier + COLUMN + "(" + index + ").";
         }
 
-        private static FileConfiguration getConfig() {
+        private static FileBasedConfiguration getConfig() {
             return Model.getSingleton().getOptionsParam().getConfig();
         }
 
@@ -530,7 +531,8 @@ public class ZapTable extends JXTable {
             if (tableColumnConfig == null) {
                 return;
             }
-            HierarchicalConfiguration config = (HierarchicalConfiguration) getConfig();
+            HierarchicalConfiguration<ImmutableNode> config =
+                    (HierarchicalConfiguration<ImmutableNode>) getConfig();
             config.clearTree(COLUMN_CONFIGURATION + persistanceIdentifier);
         }
     }

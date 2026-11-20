@@ -29,7 +29,8 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.configuration2.convert.DefaultListDelimiterHandler;
+import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.junit.jupiter.api.Test;
 
 /** Unit test for {@link ZapXmlConfiguration}. */
@@ -47,15 +48,25 @@ class ZapXmlConfigurationUnitTest {
                     + "</a>\n";
 
     @Test
-    void shouldBeInstantiatedWithDelimeterParsingDisabledAndSetNullChar() {
+    void shouldBeInstantiatedWithDelimeterParsingDisabled() {
         // Given
         ZapXmlConfiguration config = new ZapXmlConfiguration();
         // When
-        boolean isParsingDisabled = config.isDelimiterParsingDisabled();
-        char delimChar = config.getListDelimiter();
+        config.setProperty("aList", "a,b");
         // Then
-        assertThat(isParsingDisabled, is(equalTo(true)));
-        assertThat(delimChar, is(equalTo('\0')));
+        assertThat(config.getList("aList").size(), is(equalTo(1)));
+        assertThat(config.getString("aList"), is(equalTo("a,b")));
+    }
+
+    @Test
+    void shouldNotAllowEnablingDelimiterParsing() {
+        // Given
+        ZapXmlConfiguration config = new ZapXmlConfiguration();
+        // When
+        config.setListDelimiterHandler(new DefaultListDelimiterHandler(','));
+        config.setProperty("aList", "a,b");
+        // Then
+        assertThat(config.getList("aList").size(), is(equalTo(1)));
     }
 
     @Test

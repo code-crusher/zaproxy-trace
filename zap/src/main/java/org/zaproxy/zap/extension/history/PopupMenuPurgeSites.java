@@ -22,7 +22,7 @@ package org.zaproxy.zap.extension.history;
 import java.util.List;
 import javax.swing.JCheckBox;
 import javax.swing.JOptionPane;
-import org.apache.commons.configuration.FileConfiguration;
+import org.apache.commons.configuration2.FileBasedConfiguration;
 import org.parosproxy.paros.Constant;
 import org.parosproxy.paros.control.Control;
 import org.parosproxy.paros.extension.history.ExtensionHistory;
@@ -66,7 +66,7 @@ public class PopupMenuPurgeSites extends PopupMenuItemSiteNodeContainer {
             return;
         }
 
-        FileConfiguration config = Model.getSingleton().getOptionsParam().getConfig();
+        FileBasedConfiguration config = Model.getSingleton().getOptionsParam().getConfig();
         boolean confirmRemoval = config.getBoolean(REMOVE_CONFIRMATION_KEY, true);
 
         if (confirmRemoval) {

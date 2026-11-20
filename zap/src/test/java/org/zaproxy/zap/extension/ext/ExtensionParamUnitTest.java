@@ -28,7 +28,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import org.apache.commons.configuration.FileConfiguration;
 import org.junit.jupiter.api.Test;
 import org.zaproxy.zap.utils.ZapXmlConfiguration;
 
@@ -57,7 +56,7 @@ class ExtensionParamUnitTest {
     void shouldParseLoadedFileConfiguration() {
         // Given
         ExtensionParam param = new ExtensionParam();
-        FileConfiguration config = createTestConfig(false, true, false, true, true);
+        ZapXmlConfiguration config = createTestConfig(false, true, false, true, true);
         // When
         param.load(config);
         // Then
@@ -84,7 +83,7 @@ class ExtensionParamUnitTest {
     void shouldHaveLoadedConfigsAfterCloning() {
         // Given
         ExtensionParam param = new ExtensionParam();
-        FileConfiguration config = createTestConfig(false, true, false);
+        ZapXmlConfiguration config = createTestConfig(false, true, false);
         param.load(config);
         // When
         ExtensionParam clone = param.clone();
@@ -116,7 +115,7 @@ class ExtensionParamUnitTest {
     void shouldSetExtensionsState() {
         // Given
         ExtensionParam param = new ExtensionParam();
-        FileConfiguration config = createTestConfig();
+        ZapXmlConfiguration config = createTestConfig();
         param.load(config);
         Map<String, Boolean> states = extensionsState(true, false, true, false, true, true);
         // When
@@ -134,7 +133,7 @@ class ExtensionParamUnitTest {
     void shouldPersistDisabledExtensions() {
         // Given
         ExtensionParam param = new ExtensionParam();
-        FileConfiguration config = createTestConfig();
+        ZapXmlConfiguration config = createTestConfig();
         param.load(config);
         Map<String, Boolean> states = extensionsState(true, false, true, false, true, true);
         // When
@@ -152,7 +151,7 @@ class ExtensionParamUnitTest {
     void shouldNotPersistNullExtensionNamesOrNullEnabledState() {
         // Given
         ExtensionParam param = new ExtensionParam();
-        FileConfiguration config = createTestConfig();
+        ZapXmlConfiguration config = createTestConfig();
         param.load(config);
         Map<String, Boolean> states = new HashMap<>();
         states.put(null, Boolean.FALSE);
@@ -175,7 +174,7 @@ class ExtensionParamUnitTest {
         return extensionsState;
     }
 
-    private static FileConfiguration createTestConfig(boolean... states) {
+    private static ZapXmlConfiguration createTestConfig(boolean... states) {
         ZapXmlConfiguration config = new ZapXmlConfiguration();
         if (states == null || states.length == 0) {
             return config;
@@ -190,7 +189,7 @@ class ExtensionParamUnitTest {
         return config;
     }
 
-    private static FileConfiguration createMalformedTestConfig() {
+    private static ZapXmlConfiguration createMalformedTestConfig() {
         ZapXmlConfiguration config = new ZapXmlConfiguration();
         for (int i = 0; i < 3; ++i) {
             String elementBaseKey = "extensions.extension(" + i + ").";

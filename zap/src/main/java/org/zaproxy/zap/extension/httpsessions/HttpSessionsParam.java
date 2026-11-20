@@ -25,8 +25,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import org.apache.commons.configuration.ConversionException;
-import org.apache.commons.configuration.HierarchicalConfiguration;
+import org.apache.commons.configuration2.HierarchicalConfiguration;
+import org.apache.commons.configuration2.ex.ConversionException;
+import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.parosproxy.paros.common.AbstractParam;
@@ -87,13 +88,13 @@ public class HttpSessionsParam extends AbstractParam {
     protected void parse() {
         // Parse the default token names
         try {
-            List<HierarchicalConfiguration> fields =
-                    ((HierarchicalConfiguration) getConfig())
+            List<HierarchicalConfiguration<ImmutableNode>> fields =
+                    ((HierarchicalConfiguration<ImmutableNode>) getConfig())
                             .configurationsAt(ALL_DEFAULT_TOKENS_KEY);
             this.defaultTokens = new ArrayList<>(fields.size());
             this.defaultTokensEnabled = new ArrayList<>(fields.size());
             List<String> tempTokensNames = new ArrayList<>(fields.size());
-            for (HierarchicalConfiguration sub : fields) {
+            for (HierarchicalConfiguration<ImmutableNode> sub : fields) {
                 String name = sub.getString(TOKEN_NAME_KEY, "");
                 if (!"".equals(name) && !tempTokensNames.contains(name)) {
                     boolean enabled = sub.getBoolean(TOKEN_ENABLED_KEY, true);
@@ -167,7 +168,7 @@ public class HttpSessionsParam extends AbstractParam {
      * configuration}.
      */
     private void saveDefaultTokens() {
-        ((HierarchicalConfiguration) getConfig()).clearTree(ALL_DEFAULT_TOKENS_KEY);
+        ((HierarchicalConfiguration<ImmutableNode>) getConfig()).clearTree(ALL_DEFAULT_TOKENS_KEY);
 
         for (int i = 0, size = defaultTokens.size(); i < size; ++i) {
             String elementBaseKey = ALL_DEFAULT_TOKENS_KEY + "(" + i + ").";

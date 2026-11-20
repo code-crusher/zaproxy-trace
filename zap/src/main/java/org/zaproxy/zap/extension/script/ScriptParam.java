@@ -24,7 +24,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.apache.commons.configuration.HierarchicalConfiguration;
+import org.apache.commons.configuration2.HierarchicalConfiguration;
+import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.parosproxy.paros.common.AbstractParam;
@@ -67,11 +68,12 @@ public class ScriptParam extends AbstractParam {
         defaultDir = getString(PARAM_DEFAULT_DIR, "");
 
         try {
-            List<HierarchicalConfiguration> fields =
-                    ((HierarchicalConfiguration) getConfig()).configurationsAt(ALL_SCRIPTS_KEY);
+            List<HierarchicalConfiguration<ImmutableNode>> fields =
+                    ((HierarchicalConfiguration<ImmutableNode>) getConfig())
+                            .configurationsAt(ALL_SCRIPTS_KEY);
             this.scripts = new HashSet<>(fields.size());
             List<String> tempListNames = new ArrayList<>(fields.size());
-            for (HierarchicalConfiguration sub : fields) {
+            for (HierarchicalConfiguration<ImmutableNode> sub : fields) {
                 String name = sub.getString(SCRIPT_NAME_KEY, "");
                 try {
                     if (!"".equals(name) && !tempListNames.contains(name)) {
@@ -142,7 +144,7 @@ public class ScriptParam extends AbstractParam {
     }
 
     public void saveScripts() {
-        ((HierarchicalConfiguration) getConfig()).clearTree(ALL_SCRIPTS_KEY);
+        ((HierarchicalConfiguration<ImmutableNode>) getConfig()).clearTree(ALL_SCRIPTS_KEY);
 
         int i = 0;
         for (ScriptWrapper script : scripts) {
@@ -171,8 +173,9 @@ public class ScriptParam extends AbstractParam {
      * `enabled` property of the script is saved.
      */
     void saveScriptProperties(ScriptWrapper script) {
-        List<HierarchicalConfiguration> fields =
-                ((HierarchicalConfiguration) getConfig()).configurationsAt(ALL_SCRIPTS_KEY);
+        List<HierarchicalConfiguration<ImmutableNode>> fields =
+                ((HierarchicalConfiguration<ImmutableNode>) getConfig())
+                        .configurationsAt(ALL_SCRIPTS_KEY, true);
         fields.stream()
                 .filter(config -> script.getName().equals(config.getString(SCRIPT_NAME_KEY)))
                 .findAny()

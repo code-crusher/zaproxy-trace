@@ -27,7 +27,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
-import org.apache.commons.configuration.FileConfiguration;
+import org.apache.commons.configuration2.FileBasedConfiguration;
 import org.parosproxy.paros.Constant;
 import org.parosproxy.paros.network.HttpMessage;
 import org.parosproxy.paros.view.View;
@@ -177,10 +177,10 @@ public abstract class HttpPanelTextView
     public void setParentConfigurationKey(String configurationKey) {}
 
     @Override
-    public void loadConfiguration(FileConfiguration fileConfiguration) {}
+    public void loadConfiguration(FileBasedConfiguration fileConfiguration) {}
 
     @Override
-    public void saveConfiguration(FileConfiguration fileConfiguration) {}
+    public void saveConfiguration(FileBasedConfiguration fileConfiguration) {}
 
     protected class CustomPopupMenu extends JPopupMenu {
 

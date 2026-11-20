@@ -23,8 +23,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import org.apache.commons.configuration.ConversionException;
-import org.apache.commons.configuration.HierarchicalConfiguration;
+import org.apache.commons.configuration2.HierarchicalConfiguration;
+import org.apache.commons.configuration2.ex.ConversionException;
+import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.parosproxy.paros.common.AbstractParam;
@@ -78,12 +79,13 @@ public class AntiCsrfParam extends AbstractParam {
     @Override
     protected void parse() {
         try {
-            List<HierarchicalConfiguration> fields =
-                    ((HierarchicalConfiguration) getConfig()).configurationsAt(ALL_TOKENS_KEY);
+            List<HierarchicalConfiguration<ImmutableNode>> fields =
+                    ((HierarchicalConfiguration<ImmutableNode>) getConfig())
+                            .configurationsAt(ALL_TOKENS_KEY);
             this.tokens = new ArrayList<>(fields.size());
             enabledTokensNames = new ArrayList<>(fields.size());
             List<String> tempTokensNames = new ArrayList<>(fields.size());
-            for (HierarchicalConfiguration sub : fields) {
+            for (HierarchicalConfiguration<ImmutableNode> sub : fields) {
                 String name = sub.getString(TOKEN_NAME_KEY, "");
                 if (!"".equals(name) && !tempTokensNames.contains(name)) {
                     boolean enabled = sub.getBoolean(TOKEN_ENABLED_KEY, true);
@@ -130,7 +132,7 @@ public class AntiCsrfParam extends AbstractParam {
     public void setTokens(List<AntiCsrfParamToken> tokens) {
         this.tokens = new ArrayList<>(tokens);
 
-        ((HierarchicalConfiguration) getConfig()).clearTree(ALL_TOKENS_KEY);
+        ((HierarchicalConfiguration<ImmutableNode>) getConfig()).clearTree(ALL_TOKENS_KEY);
 
         ArrayList<String> enabledTokens = new ArrayList<>(tokens.size());
         for (int i = 0, size = tokens.size(); i < size; ++i) {

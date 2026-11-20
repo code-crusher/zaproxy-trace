@@ -29,8 +29,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.HierarchicalConfiguration;
+import org.apache.commons.configuration2.HierarchicalConfiguration;
+import org.apache.commons.configuration2.ex.ConfigurationException;
+import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.parosproxy.paros.Constant;
@@ -299,7 +300,7 @@ public class OptionsParamApi extends AbstractParam {
      */
     public void setPermittedAddresses(List<DomainMatcher> addrs) {
         if (addrs == null || addrs.isEmpty()) {
-            ((HierarchicalConfiguration) getConfig()).clearTree(ADDRESS_KEY);
+            ((HierarchicalConfiguration<ImmutableNode>) getConfig()).clearTree(ADDRESS_KEY);
 
             this.permittedAddresses = Collections.emptyList();
             this.permittedAddressesEnabled = Collections.emptyList();
@@ -308,7 +309,7 @@ public class OptionsParamApi extends AbstractParam {
 
         this.permittedAddresses = new ArrayList<>(addrs);
 
-        ((HierarchicalConfiguration) getConfig()).clearTree(ADDRESS_KEY);
+        ((HierarchicalConfiguration<ImmutableNode>) getConfig()).clearTree(ADDRESS_KEY);
 
         int size = addrs.size();
         ArrayList<DomainMatcher> enabledAddrs = new ArrayList<>(size);
@@ -330,11 +331,12 @@ public class OptionsParamApi extends AbstractParam {
     }
 
     private void loadPermittedAddresses() {
-        List<HierarchicalConfiguration> fields =
-                ((HierarchicalConfiguration) getConfig()).configurationsAt(ADDRESS_KEY);
+        List<HierarchicalConfiguration<ImmutableNode>> fields =
+                ((HierarchicalConfiguration<ImmutableNode>) getConfig())
+                        .configurationsAt(ADDRESS_KEY);
         this.permittedAddresses = new ArrayList<>(fields.size());
         ArrayList<DomainMatcher> addrsEnabled = new ArrayList<>(fields.size());
-        for (HierarchicalConfiguration sub : fields) {
+        for (HierarchicalConfiguration<ImmutableNode> sub : fields) {
             String value = sub.getString(ADDRESS_VALUE_KEY, "");
             if (value.isEmpty()) {
                 LOGGER.warn("Failed to read a permitted address entry, required value is empty.");
@@ -414,12 +416,13 @@ public class OptionsParamApi extends AbstractParam {
     }
 
     private void loadPersistentCallBacks() {
-        List<HierarchicalConfiguration> fields =
-                ((HierarchicalConfiguration) getConfig()).configurationsAt(CALLBACK_KEY);
+        List<HierarchicalConfiguration<ImmutableNode>> fields =
+                ((HierarchicalConfiguration<ImmutableNode>) getConfig())
+                        .configurationsAt(CALLBACK_KEY);
 
         persistentCallBacks = new HashMap<>(fields.size());
 
-        for (HierarchicalConfiguration sub : fields) {
+        for (HierarchicalConfiguration<ImmutableNode> sub : fields) {
             String cbUrl = sub.getString(CALLBACK_URL_KEY, "");
             if (cbUrl.isEmpty()) {
                 LOGGER.warn("Failed to read a callback entry, required url is empty.");
@@ -435,7 +438,7 @@ public class OptionsParamApi extends AbstractParam {
     }
 
     private void savePersistentCallBacks() {
-        ((HierarchicalConfiguration) getConfig()).clearTree(CALLBACK_KEY);
+        ((HierarchicalConfiguration<ImmutableNode>) getConfig()).clearTree(CALLBACK_KEY);
 
         int i = 0;
         for (Entry<String, String> entry : persistentCallBacks.entrySet()) {

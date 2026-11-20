@@ -33,7 +33,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Highlighter;
 import javax.swing.text.Highlighter.HighlightPainter;
-import org.apache.commons.configuration.FileConfiguration;
+import org.apache.commons.configuration2.FileBasedConfiguration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.fife.ui.rsyntaxtextarea.AbstractTokenMakerFactory;
@@ -326,7 +326,7 @@ public abstract class HttpPanelSyntaxHighlightTextArea extends RSyntaxTextArea {
         return message;
     }
 
-    public void loadConfiguration(String key, FileConfiguration fileConfiguration) {
+    public void loadConfiguration(String key, FileBasedConfiguration fileConfiguration) {
         setAntiAliasingEnabled(
                 fileConfiguration.getBoolean(key + ANTI_ALIASING, this.getAntiAliasingEnabled()));
 
@@ -383,7 +383,7 @@ public abstract class HttpPanelSyntaxHighlightTextArea extends RSyntaxTextArea {
         viewMenu.setWordWrapEnabled(!disabled);
     }
 
-    public void saveConfiguration(String key, FileConfiguration fileConfiguration) {
+    public void saveConfiguration(String key, FileBasedConfiguration fileConfiguration) {
         fileConfiguration.setProperty(key + ANTI_ALIASING, this.getAntiAliasingEnabled());
 
         Component c = getParent();

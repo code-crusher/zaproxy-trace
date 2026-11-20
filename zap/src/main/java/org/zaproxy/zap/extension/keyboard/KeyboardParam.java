@@ -24,8 +24,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import javax.swing.KeyStroke;
-import org.apache.commons.configuration.ConversionException;
-import org.apache.commons.configuration.HierarchicalConfiguration;
+import org.apache.commons.configuration2.HierarchicalConfiguration;
+import org.apache.commons.configuration2.ex.ConversionException;
+import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.parosproxy.paros.common.AbstractParam;
@@ -49,10 +50,11 @@ public class KeyboardParam extends AbstractParam {
     @Override
     protected void parse() {
         try {
-            List<HierarchicalConfiguration> fields =
-                    ((HierarchicalConfiguration) getConfig()).configurationsAt(ALL_SHORTCUTS_KEY);
+            List<HierarchicalConfiguration<ImmutableNode>> fields =
+                    ((HierarchicalConfiguration<ImmutableNode>) getConfig())
+                            .configurationsAt(ALL_SHORTCUTS_KEY);
             map = new HashMap<>(fields.size());
-            for (HierarchicalConfiguration sub : fields) {
+            for (HierarchicalConfiguration<ImmutableNode> sub : fields) {
                 String name = sub.getString(MENU_ITEM_KEY, "");
                 if (name.length() > 0) {
                     map.put(
@@ -77,7 +79,7 @@ public class KeyboardParam extends AbstractParam {
     }
 
     protected void setConfigs() {
-        ((HierarchicalConfiguration) getConfig()).clearTree(ALL_SHORTCUTS_KEY);
+        ((HierarchicalConfiguration<ImmutableNode>) getConfig()).clearTree(ALL_SHORTCUTS_KEY);
 
         int i = 0;
         for (Entry<String, KeyStroke> entry : map.entrySet()) {

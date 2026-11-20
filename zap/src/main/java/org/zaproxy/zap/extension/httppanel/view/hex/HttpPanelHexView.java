@@ -22,7 +22,7 @@ package org.zaproxy.zap.extension.httppanel.view.hex;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
-import org.apache.commons.configuration.FileConfiguration;
+import org.apache.commons.configuration2.FileBasedConfiguration;
 import org.parosproxy.paros.Constant;
 import org.zaproxy.zap.extension.httppanel.Message;
 import org.zaproxy.zap.extension.httppanel.view.AbstractByteHttpPanelViewModel;
@@ -149,10 +149,10 @@ public class HttpPanelHexView implements HttpPanelView, HttpPanelViewModelListen
     public void setParentConfigurationKey(String configurationKey) {}
 
     @Override
-    public void loadConfiguration(FileConfiguration fileConfiguration) {}
+    public void loadConfiguration(FileBasedConfiguration fileConfiguration) {}
 
     @Override
-    public void saveConfiguration(FileConfiguration fileConfiguration) {}
+    public void saveConfiguration(FileBasedConfiguration fileConfiguration) {}
 
     @Override
     public void setSelected(boolean selected) {

@@ -26,7 +26,6 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 
 import java.io.File;
-import org.apache.commons.configuration.FileConfiguration;
 import org.junit.jupiter.api.Test;
 import org.parosproxy.paros.Constant;
 import org.zaproxy.zap.utils.ZapXmlConfiguration;
@@ -46,7 +45,7 @@ class OptionsParamCheckForUpdatesUnitTest {
     void shouldParseEmptyConfig() {
         // Given
         OptionsParamCheckForUpdates param = new OptionsParamCheckForUpdates();
-        FileConfiguration config = new ZapXmlConfiguration();
+        ZapXmlConfiguration config = new ZapXmlConfiguration();
         // When
         param.load(config);
         // Then

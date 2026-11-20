@@ -22,8 +22,9 @@ package org.zaproxy.zap.extension.proxies;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import org.apache.commons.configuration.ConversionException;
-import org.apache.commons.configuration.HierarchicalConfiguration;
+import org.apache.commons.configuration2.HierarchicalConfiguration;
+import org.apache.commons.configuration2.ex.ConversionException;
+import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.parosproxy.paros.common.AbstractParam;
@@ -59,11 +60,12 @@ public class ProxiesParam extends AbstractParam {
     @Override
     protected void parse() {
         try {
-            List<HierarchicalConfiguration> fields =
-                    ((HierarchicalConfiguration) getConfig()).configurationsAt(ALL_PROXIES_KEY);
+            List<HierarchicalConfiguration<ImmutableNode>> fields =
+                    ((HierarchicalConfiguration<ImmutableNode>) getConfig())
+                            .configurationsAt(ALL_PROXIES_KEY);
             this.proxies = new ArrayList<>(fields.size() + 1);
 
-            for (HierarchicalConfiguration sub : fields) {
+            for (HierarchicalConfiguration<ImmutableNode> sub : fields) {
                 this.proxies.add(
                         new ProxiesParamProxy(
                                 sub.getString(PROXY_ADDRESS_KEY),
@@ -126,7 +128,7 @@ public class ProxiesParam extends AbstractParam {
     public void setProxies(List<ProxiesParamProxy> proxies) {
         this.proxies = new ArrayList<>(proxies);
 
-        ((HierarchicalConfiguration) getConfig()).clearTree(ALL_PROXIES_KEY);
+        ((HierarchicalConfiguration<ImmutableNode>) getConfig()).clearTree(ALL_PROXIES_KEY);
 
         for (int i = 0, size = proxies.size(); i < size; ++i) {
             String elementBaseKey = ALL_PROXIES_KEY + "(" + i + ").";

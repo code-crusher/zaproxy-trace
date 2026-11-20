@@ -27,7 +27,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
-import org.apache.commons.configuration.FileConfiguration;
+import org.apache.commons.configuration2.FileBasedConfiguration;
 import org.fife.ui.rtextarea.RTextScrollPane;
 import org.parosproxy.paros.Constant;
 import org.parosproxy.paros.network.HttpMessage;
@@ -209,12 +209,12 @@ public abstract class HttpPanelSyntaxHighlightTextView
     }
 
     @Override
-    public void loadConfiguration(FileConfiguration fileConfiguration) {
+    public void loadConfiguration(FileBasedConfiguration fileConfiguration) {
         httpPanelTextArea.loadConfiguration(configurationKey, fileConfiguration);
     }
 
     @Override
-    public void saveConfiguration(FileConfiguration fileConfiguration) {
+    public void saveConfiguration(FileBasedConfiguration fileConfiguration) {
         httpPanelTextArea.saveConfiguration(configurationKey, fileConfiguration);
     }
 

@@ -19,12 +19,16 @@
  */
 package org.zaproxy.zap.tasks.internal;
 
+import java.io.File;
+import java.io.InputStream;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
-import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.commons.configuration2.XMLConfiguration;
+import org.apache.commons.configuration2.ex.ConfigurationException;
+import org.apache.commons.configuration2.io.FileHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -33,11 +37,12 @@ public class ZapXmlConfiguration extends XMLConfiguration {
 
     private static final long serialVersionUID = -8598525138011232529L;
 
+    private final transient FileHandler fileHandler = new FileHandler(this);
+
     public ZapXmlConfiguration() {
         super();
 
-        super.setEncoding("UTF-8");
-        super.setDelimiterParsingDisabled(true);
+        fileHandler.setEncoding("UTF-8");
     }
 
     @Override
@@ -76,9 +81,18 @@ public class ZapXmlConfiguration extends XMLConfiguration {
     }
 
     @Override
-    protected Transformer createTransformer() throws TransformerException {
+    protected Transformer createTransformer() throws ConfigurationException {
         Transformer transformer = super.createTransformer();
         transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
         return transformer;
+    }
+
+    public void load(File file) throws ConfigurationException {
+        fileHandler.setFile(file);
+        fileHandler.load();
+    }
+
+    public void load(InputStream in) throws ConfigurationException {
+        fileHandler.load(in);
     }
 }

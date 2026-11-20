@@ -33,7 +33,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
-import org.apache.commons.configuration.FileConfiguration;
+import org.apache.commons.configuration2.FileBasedConfiguration;
 import org.parosproxy.paros.Constant;
 import org.parosproxy.paros.network.HtmlParameter;
 import org.parosproxy.paros.network.HttpMessage;
@@ -221,10 +221,10 @@ public abstract class HttpPanelParamTableView implements HttpPanelView, HttpPane
     public void setParentConfigurationKey(String configurationKey) {}
 
     @Override
-    public void loadConfiguration(FileConfiguration configuration) {}
+    public void loadConfiguration(FileBasedConfiguration configuration) {}
 
     @Override
-    public void saveConfiguration(FileConfiguration configuration) {}
+    public void saveConfiguration(FileBasedConfiguration configuration) {}
 
     private static final class ComboBoxAddinsActionListener implements ActionListener {
 

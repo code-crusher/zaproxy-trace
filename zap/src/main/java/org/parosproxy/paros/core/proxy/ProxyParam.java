@@ -53,7 +53,8 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.List;
-import org.apache.commons.configuration.HierarchicalConfiguration;
+import org.apache.commons.configuration2.HierarchicalConfiguration;
+import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.parosproxy.paros.common.AbstractParam;
@@ -331,7 +332,8 @@ public class ProxyParam extends AbstractParam {
             }
         }
 
-        ((HierarchicalConfiguration) getConfig()).clearTree(ALL_SECURITY_PROTOCOLS_ENABLED_KEY);
+        ((HierarchicalConfiguration<ImmutableNode>) getConfig())
+                .clearTree(ALL_SECURITY_PROTOCOLS_ENABLED_KEY);
 
         for (int i = 0; i < enabledProtocols.length; ++i) {
             String elementBaseKey = ALL_SECURITY_PROTOCOLS_ENABLED_KEY + "(" + i + ")";

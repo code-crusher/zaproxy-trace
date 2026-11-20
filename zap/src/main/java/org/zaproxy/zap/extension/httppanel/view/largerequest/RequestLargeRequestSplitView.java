@@ -23,7 +23,7 @@ import java.awt.BorderLayout;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import org.apache.commons.configuration.FileConfiguration;
+import org.apache.commons.configuration2.FileBasedConfiguration;
 import org.parosproxy.paros.Constant;
 import org.zaproxy.zap.extension.httppanel.Message;
 import org.zaproxy.zap.extension.httppanel.view.HttpPanelView;
@@ -128,10 +128,10 @@ public class RequestLargeRequestSplitView implements HttpPanelView, HttpPanelVie
     public void setParentConfigurationKey(String configurationKey) {}
 
     @Override
-    public void loadConfiguration(FileConfiguration fileConfiguration) {}
+    public void loadConfiguration(FileBasedConfiguration fileConfiguration) {}
 
     @Override
-    public void saveConfiguration(FileConfiguration fileConfiguration) {}
+    public void saveConfiguration(FileBasedConfiguration fileConfiguration) {}
 
     @Override
     public HttpPanelViewModel getModel() {

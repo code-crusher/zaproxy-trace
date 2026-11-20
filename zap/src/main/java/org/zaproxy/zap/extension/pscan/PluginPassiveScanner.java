@@ -26,8 +26,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.apache.commons.configuration.Configuration;
-import org.apache.commons.configuration.HierarchicalConfiguration;
+import org.apache.commons.configuration2.Configuration;
+import org.apache.commons.configuration2.HierarchicalConfiguration;
+import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.commons.lang3.StringUtils;
 import org.parosproxy.paros.core.scanner.Alert;
 import org.parosproxy.paros.core.scanner.Alert.Source;
@@ -113,9 +114,9 @@ public abstract class PluginPassiveScanner extends Enableable
     }
 
     public void loadFrom(Configuration conf) {
-        List<HierarchicalConfiguration> fields =
-                ((HierarchicalConfiguration) getConfig()).configurationsAt(PSCANS_KEY);
-        for (HierarchicalConfiguration sub : fields) {
+        List<HierarchicalConfiguration<ImmutableNode>> fields =
+                getHierarchicalConfig().configurationsAt(PSCANS_KEY);
+        for (HierarchicalConfiguration<ImmutableNode> sub : fields) {
             if (isPluginConfiguration(sub)) {
                 // For compatibility with older versions:
                 String alertThresholdName = sub.getString(LEVEL_KEY, null);
@@ -155,6 +156,24 @@ public abstract class PluginPassiveScanner extends Enableable
     }
 
     /**
+     * Gets the current configuration as a hierarchical configuration.
+     *
+     * @return the hierarchical configuration
+     * @throws IllegalStateException if the current configuration is not hierarchical.
+     */
+    private HierarchicalConfiguration<ImmutableNode> getHierarchicalConfig() {
+        Configuration conf = getConfig();
+        if (!(conf instanceof HierarchicalConfiguration)) {
+            throw new IllegalStateException(
+                    "The configuration must be hierarchical: " + conf.getClass().getName());
+        }
+        @SuppressWarnings("unchecked")
+        HierarchicalConfiguration<ImmutableNode> hierarchicalConfig =
+                (HierarchicalConfiguration<ImmutableNode>) conf;
+        return hierarchicalConfig;
+    }
+
+    /**
      * Saves the configurations of the passive scanner to the current configuration.
      *
      * @throws IllegalStateException if no configuration was set.
@@ -172,11 +191,11 @@ public abstract class PluginPassiveScanner extends Enableable
 
     public void saveTo(Configuration conf) {
         boolean removed = false;
-        List<HierarchicalConfiguration> fields =
-                ((HierarchicalConfiguration) getConfig()).configurationsAt(PSCANS_KEY);
-        for (HierarchicalConfiguration sub : fields) {
-            if (isPluginConfiguration(sub)) {
-                sub.getRootNode().getParentNode().removeChild(sub.getRootNode());
+        HierarchicalConfiguration<ImmutableNode> config = getHierarchicalConfig();
+        List<HierarchicalConfiguration<ImmutableNode>> fields = config.configurationsAt(PSCANS_KEY);
+        for (int i = 0, size = fields.size(); i < size; ++i) {
+            if (isPluginConfiguration(fields.get(i))) {
+                config.clearTree(PSCANS_KEY + "(" + i + ")");
                 removed = true;
                 break;
             }

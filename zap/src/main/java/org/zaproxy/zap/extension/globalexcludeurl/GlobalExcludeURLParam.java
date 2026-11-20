@@ -22,8 +22,9 @@ package org.zaproxy.zap.extension.globalexcludeurl;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.commons.configuration.ConversionException;
-import org.apache.commons.configuration.HierarchicalConfiguration;
+import org.apache.commons.configuration2.HierarchicalConfiguration;
+import org.apache.commons.configuration2.ex.ConversionException;
+import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.parosproxy.paros.common.AbstractParam;
@@ -53,8 +54,8 @@ public class GlobalExcludeURLParam extends AbstractParam {
 
     /**
      * Fills in the list of default regexs to ignore. In a future version, this could be read from a
-     * system-wide default HierarchicalConfiguration xml config file instead or even a
-     * HierarchicalConfiguration string directly embedded in this file.
+     * system-wide default HierarchicalConfiguration<ImmutableNode> xml config file instead or even
+     * a HierarchicalConfiguration<ImmutableNode> string directly embedded in this file.
      */
     private void setDefaultList() {
         // Remember, these are regexs, so escape properly \\ vs \
@@ -206,12 +207,13 @@ public class GlobalExcludeURLParam extends AbstractParam {
     @Override
     protected void parse() {
         try {
-            List<HierarchicalConfiguration> fields =
-                    ((HierarchicalConfiguration) getConfig()).configurationsAt(ALL_TOKENS_KEY);
+            List<HierarchicalConfiguration<ImmutableNode>> fields =
+                    ((HierarchicalConfiguration<ImmutableNode>) getConfig())
+                            .configurationsAt(ALL_TOKENS_KEY);
             this.tokens = new ArrayList<>(fields.size());
             enabledTokensNames = new ArrayList<>(fields.size());
             List<String> tempTokensNames = new ArrayList<>(fields.size());
-            for (HierarchicalConfiguration sub : fields) {
+            for (HierarchicalConfiguration<ImmutableNode> sub : fields) {
                 String regex = sub.getString(TOKEN_REGEX_KEY, "");
                 if (!"".equals(regex) && !tempTokensNames.contains(regex)) {
                     boolean enabled = sub.getBoolean(TOKEN_ENABLED_KEY, true);
@@ -245,7 +247,7 @@ public class GlobalExcludeURLParam extends AbstractParam {
     public void setTokens(List<GlobalExcludeURLParamToken> tokens) {
         this.tokens = new ArrayList<>(tokens);
 
-        ((HierarchicalConfiguration) getConfig()).clearTree(ALL_TOKENS_KEY);
+        ((HierarchicalConfiguration<ImmutableNode>) getConfig()).clearTree(ALL_TOKENS_KEY);
 
         ArrayList<String> enabledTokens = new ArrayList<>(tokens.size());
         for (int i = 0, size = tokens.size(); i < size; ++i) {

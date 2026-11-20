@@ -55,10 +55,10 @@ import java.util.zip.ZipEntry;
 import org.apache.commons.collections.iterators.EnumerationIterator;
 import org.apache.commons.collections.iterators.IteratorChain;
 import org.apache.commons.collections.iterators.IteratorEnumeration;
-import org.apache.commons.configuration.Configuration;
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.FileConfiguration;
-import org.apache.commons.configuration.HierarchicalConfiguration;
+import org.apache.commons.configuration2.Configuration;
+import org.apache.commons.configuration2.HierarchicalConfiguration;
+import org.apache.commons.configuration2.ex.ConfigurationException;
+import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -1307,7 +1307,7 @@ public class AddOnLoader extends URLClassLoader {
         return data;
     }
 
-    private static void saveList(FileConfiguration config, String key, List<String> list) {
+    private static void saveList(ZapXmlConfiguration config, String key, List<String> list) {
         StringBuilder sb = new StringBuilder();
 
         for (String id : list) {
@@ -1326,11 +1326,12 @@ public class AddOnLoader extends URLClassLoader {
     }
 
     private static Map<AddOn, AddOnRunState> loadAddOnsRunState(
-            HierarchicalConfiguration config, AddOnCollection addOnCollection) {
-        List<HierarchicalConfiguration> savedAddOns = config.configurationsAt(ADDONS_RUNNABLE_KEY);
+            HierarchicalConfiguration<ImmutableNode> config, AddOnCollection addOnCollection) {
+        List<HierarchicalConfiguration<ImmutableNode>> savedAddOns =
+                config.configurationsAt(ADDONS_RUNNABLE_KEY);
 
         Map<AddOn, AddOnRunState> runnableAddOns = new HashMap<>();
-        for (HierarchicalConfiguration savedAddOn : savedAddOns) {
+        for (HierarchicalConfiguration<ImmutableNode> savedAddOn : savedAddOns) {
             AddOn addOn = addOnCollection.getAddOn(savedAddOn.getString(ADDON_RUNNABLE_ID_KEY, ""));
             if (addOn == null) {
                 // No longer exists, skip it.
@@ -1427,8 +1428,9 @@ public class AddOnLoader extends URLClassLoader {
 
     private static boolean migrateOldAddOnsState(ZapXmlConfiguration newConfig) {
         boolean dataMigrated = false;
-        HierarchicalConfiguration oldConfig =
-                (HierarchicalConfiguration) Model.getSingleton().getOptionsParam().getConfig();
+        HierarchicalConfiguration<ImmutableNode> oldConfig =
+                (HierarchicalConfiguration<ImmutableNode>)
+                        Model.getSingleton().getOptionsParam().getConfig();
 
         if (oldConfig.containsKey(ADDONS_BLOCK_LIST)) {
             List<String> blockList = loadList(oldConfig, ADDONS_BLOCK_LIST);
@@ -1437,11 +1439,11 @@ public class AddOnLoader extends URLClassLoader {
             dataMigrated = true;
         }
 
-        List<HierarchicalConfiguration> oldAddOnsState =
+        List<HierarchicalConfiguration<ImmutableNode>> oldAddOnsState =
                 oldConfig.configurationsAt(ADDONS_RUNNABLE_KEY);
         if (!oldAddOnsState.isEmpty()) {
             int i = 0;
-            for (HierarchicalConfiguration savedAddOn : oldAddOnsState) {
+            for (HierarchicalConfiguration<ImmutableNode> savedAddOn : oldAddOnsState) {
                 String elementBaseKey = ADDONS_RUNNABLE_KEY + "(" + i + ").";
                 newConfig.setProperty(
                         elementBaseKey + ADDON_RUNNABLE_ID_KEY,

@@ -25,7 +25,7 @@ import java.util.regex.Pattern;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
-import org.apache.commons.configuration.FileConfiguration;
+import org.apache.commons.configuration2.FileBasedConfiguration;
 import org.parosproxy.paros.Constant;
 import org.parosproxy.paros.network.HttpMessage;
 import org.zaproxy.zap.extension.httppanel.Message;
@@ -163,7 +163,8 @@ public class RequestAllComponent
     }
 
     @Override
-    public void addView(HttpPanelView view, Object options, FileConfiguration fileConfiguration) {
+    public void addView(
+            HttpPanelView view, Object options, FileBasedConfiguration fileConfiguration) {
         views.addView(view, fileConfiguration);
     }
 
@@ -201,12 +202,12 @@ public class RequestAllComponent
     }
 
     @Override
-    public void loadConfig(FileConfiguration fileConfiguration) {
+    public void loadConfig(FileBasedConfiguration fileConfiguration) {
         views.loadConfig(fileConfiguration);
     }
 
     @Override
-    public void saveConfig(FileConfiguration fileConfiguration) {
+    public void saveConfig(FileBasedConfiguration fileConfiguration) {
         views.saveConfig(fileConfiguration);
     }
 

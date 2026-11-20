@@ -41,7 +41,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
 import javax.swing.MutableComboBoxModel;
-import org.apache.commons.configuration.FileConfiguration;
+import org.apache.commons.configuration2.FileBasedConfiguration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.parosproxy.paros.Constant;
@@ -394,7 +394,7 @@ public class HttpPanelComponentViewsManager implements ItemListener, MessageLoca
         }
     }
 
-    public void addView(HttpPanelView view, FileConfiguration fileConfiguration) {
+    public void addView(HttpPanelView view, FileBasedConfiguration fileConfiguration) {
         addView(view);
 
         view.loadConfiguration(fileConfiguration);
@@ -481,7 +481,7 @@ public class HttpPanelComponentViewsManager implements ItemListener, MessageLoca
         }
     }
 
-    public void loadConfig(FileConfiguration fileConfiguration) {
+    public void loadConfig(FileBasedConfiguration fileConfiguration) {
         savedSelectedViewName = fileConfiguration.getString(configurationKey + DEFAULT_VIEW_KEY);
 
         Iterator<HttpPanelView> it = views.values().iterator();
@@ -494,7 +494,7 @@ public class HttpPanelComponentViewsManager implements ItemListener, MessageLoca
         }
     }
 
-    public void saveConfig(FileConfiguration fileConfiguration) {
+    public void saveConfig(FileBasedConfiguration fileConfiguration) {
         if (currentView != null) {
             fileConfiguration.setProperty(
                     configurationKey + DEFAULT_VIEW_KEY, currentView.getName());

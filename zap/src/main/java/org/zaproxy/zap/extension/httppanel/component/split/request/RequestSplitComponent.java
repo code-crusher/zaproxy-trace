@@ -26,7 +26,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.JToggleButton;
-import org.apache.commons.configuration.FileConfiguration;
+import org.apache.commons.configuration2.FileBasedConfiguration;
 import org.parosproxy.paros.Constant;
 import org.parosproxy.paros.model.Model;
 import org.parosproxy.paros.network.HttpMessage;
@@ -197,7 +197,8 @@ public class RequestSplitComponent<T extends Message>
     }
 
     @Override
-    public void addView(HttpPanelView view, Object options, FileConfiguration fileConfiguration) {
+    public void addView(
+            HttpPanelView view, Object options, FileBasedConfiguration fileConfiguration) {
         if (options != null) {
             if (ViewComponent.HEADER.equals(options)) {
                 headerViews.addView(view, fileConfiguration);
@@ -270,7 +271,7 @@ public class RequestSplitComponent<T extends Message>
     }
 
     @Override
-    public void loadConfig(FileConfiguration fileConfiguration) {
+    public void loadConfig(FileBasedConfiguration fileConfiguration) {
         splitMain.setDividerLocation(
                 Model.getSingleton()
                         .getOptionsParam()
@@ -282,7 +283,7 @@ public class RequestSplitComponent<T extends Message>
     }
 
     @Override
-    public void saveConfig(FileConfiguration fileConfiguration) {
+    public void saveConfig(FileBasedConfiguration fileConfiguration) {
         Model.getSingleton()
                 .getOptionsParam()
                 .getConfig()

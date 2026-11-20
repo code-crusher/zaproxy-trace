@@ -25,7 +25,7 @@ dependencies {
     implementation("com.github.javaparser:javaparser-core:3.15.21")
     implementation("com.github.zafarkhaja:java-semver:0.9.0")
     implementation("commons-codec:commons-codec:1.20.0")
-    implementation("commons-configuration:commons-configuration:1.10")
+    implementation("org.apache.commons:commons-configuration2:2.15.1")
     implementation("commons-collections:commons-collections:3.2.2")
     implementation("commons-io:commons-io:2.13.0")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.18.2")

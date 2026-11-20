@@ -45,7 +45,7 @@ import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
-import org.apache.commons.configuration.FileConfiguration;
+import org.apache.commons.configuration2.FileBasedConfiguration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdesktop.swingx.WrapLayout;
@@ -507,7 +507,7 @@ public abstract class HttpPanel extends AbstractPanel {
     }
 
     public void addComponent(
-            HttpPanelComponentInterface component, FileConfiguration fileConfiguration) {
+            HttpPanelComponentInterface component, FileBasedConfiguration fileConfiguration) {
         addComponent(component);
 
         component.setParentConfigurationKey(componentsConfigurationKey);
@@ -540,7 +540,7 @@ public abstract class HttpPanel extends AbstractPanel {
             String componentName,
             HttpPanelView view,
             Object options,
-            FileConfiguration fileConfiguration) {
+            FileBasedConfiguration fileConfiguration) {
         synchronized (components) {
             HttpPanelComponentInterface component = components.get(componentName);
             if (component != null) {
@@ -580,7 +580,7 @@ public abstract class HttpPanel extends AbstractPanel {
         }
     }
 
-    public void loadConfig(FileConfiguration fileConfiguration) {
+    public void loadConfig(FileBasedConfiguration fileConfiguration) {
         savedLastSelectedComponentName =
                 fileConfiguration.getString(baseConfigurationKey + DEFAULT_COMPONENT_KEY);
 
@@ -597,7 +597,7 @@ public abstract class HttpPanel extends AbstractPanel {
         }
     }
 
-    public void saveConfig(FileConfiguration fileConfiguration) {
+    public void saveConfig(FileBasedConfiguration fileConfiguration) {
         if (currentComponent != null) {
             fileConfiguration.setProperty(
                     baseConfigurationKey + DEFAULT_COMPONENT_KEY, currentComponent.getName());

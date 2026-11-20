@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.StringReader;
 import java.util.List;
-import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.zaproxy.zap.control.AddOnCollection.Platform;
@@ -143,11 +143,9 @@ class AddOnCollectionUnitTest {
     @BeforeEach
     void setUp() throws Exception {
         configA = new ZapXmlConfiguration();
-        configA.setDelimiterParsingDisabled(true);
         configA.load(new StringReader(CONF_A));
 
         configB = new ZapXmlConfiguration();
-        configB.setDelimiterParsingDisabled(true);
         configB.load(new StringReader(CONF_B));
     }
 

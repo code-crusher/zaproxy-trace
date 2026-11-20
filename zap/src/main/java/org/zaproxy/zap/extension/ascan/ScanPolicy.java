@@ -19,9 +19,9 @@
  */
 package org.zaproxy.zap.extension.ascan;
 
-import org.apache.commons.configuration.Configuration;
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.FileConfiguration;
+import org.apache.commons.configuration2.Configuration;
+import org.apache.commons.configuration2.FileBasedConfiguration;
+import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.commons.lang3.EnumUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -70,7 +70,7 @@ public class ScanPolicy {
         setDefaultStrength(getAttackStrengthFromConfig());
     }
 
-    public ScanPolicy(FileConfiguration conf) throws ConfigurationException {
+    public ScanPolicy(FileBasedConfiguration conf) throws ConfigurationException {
         pluginFactory.loadAllPlugin(conf);
         this.conf = new ZapXmlConfiguration();
         name = "";

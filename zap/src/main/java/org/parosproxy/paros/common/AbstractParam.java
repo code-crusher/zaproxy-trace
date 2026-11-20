@@ -44,9 +44,8 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.apache.commons.configuration.ConfigurationUtils;
-import org.apache.commons.configuration.ConversionException;
-import org.apache.commons.configuration.FileConfiguration;
+import org.apache.commons.configuration2.ConfigurationUtils;
+import org.apache.commons.configuration2.ex.ConversionException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.zaproxy.zap.control.ControlOverrides;
@@ -56,14 +55,14 @@ public abstract class AbstractParam implements Cloneable {
 
     private static final Logger LOGGER = LogManager.getLogger(AbstractParam.class);
 
-    private FileConfiguration config = null;
+    private ZapXmlConfiguration config = null;
 
     /**
      * Loads the configurations from the given configuration file.
      *
      * @param config the configuration file
      */
-    public void load(FileConfiguration config) {
+    public void load(ZapXmlConfiguration config) {
         this.config = config;
 
         try {
@@ -113,7 +112,7 @@ public abstract class AbstractParam implements Cloneable {
      *
      * @return the configurations file
      */
-    public FileConfiguration getConfig() {
+    public ZapXmlConfiguration getConfig() {
         return config;
     }
 
@@ -121,7 +120,7 @@ public abstract class AbstractParam implements Cloneable {
     public AbstractParam clone() {
         try {
             AbstractParam clone = (AbstractParam) super.clone();
-            clone.load((FileConfiguration) ConfigurationUtils.cloneConfiguration(config));
+            clone.load((ZapXmlConfiguration) ConfigurationUtils.cloneConfiguration(config));
             return clone;
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);

@@ -23,18 +23,12 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
-import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -84,27 +78,24 @@ class ScriptParamUnitTest {
     }
 
     @Test
-    void shouldSaveScriptProperties() throws Exception {
+    void shouldSaveScriptProperties() {
         // Given
         var script = new ScriptWrapper();
         script.setEngine(mock(ScriptEngineWrapper.class));
         script.setName("script.js");
-        ZapXmlConfiguration config = mock(ZapXmlConfiguration.class);
-        var scriptConfigs =
-                List.of(
-                        mock(HierarchicalConfiguration.class),
-                        mock(HierarchicalConfiguration.class));
-        when(config.configurationsAt("script.scripts")).thenReturn(scriptConfigs);
-        when(scriptConfigs.get(0).getString("name")).thenReturn(script.getName());
-        when(scriptConfigs.get(1).getString("name")).thenReturn("differentScript.js");
+        var config = new ZapXmlConfiguration();
+        config.setProperty("script.scripts(0).name", "script.js");
+        config.setProperty("script.scripts(0).enabled", false);
+        config.setProperty("script.scripts(1).name", "differentScript.js");
+        config.setProperty("script.scripts(1).enabled", false);
         var param = new ScriptParam();
         param.load(config);
         // When
         script.setEnabled(true);
         param.saveScriptProperties(script);
         // Then
-        verify(scriptConfigs.get(0)).setProperty("enabled", true);
-        verify(scriptConfigs.get(1), times(0)).setProperty(anyString(), any());
+        assertThat(config.getBoolean("script.scripts(0).enabled"), is(equalTo(true)));
+        assertThat(config.getBoolean("script.scripts(1).enabled"), is(equalTo(false)));
     }
 
     @Test

@@ -34,7 +34,7 @@ and subject to their respective licenses.
 | commons-beanutils-1.11.0.jar        | Apache 2.0                |
 | commons-codec-1.23.0.jar            | Apache 2.0                |
 | commons-collections-3.2.2.jar       | Apache 2.0                |
-| commons-configuration-1.10.jar      | Apache 2.0                |
+| commons-configuration2-2.15.1.jar   | Apache 2.0                |
 | commons-csv-1.14.1.jar              | Apache 2.0                |
 | commons-httpclient-3.1.jar          | Apache 2.0                |
 | commons-io-2.22.0.jar               | Apache 2.0                |

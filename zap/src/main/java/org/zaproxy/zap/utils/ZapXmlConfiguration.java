@@ -21,15 +21,19 @@ package org.zaproxy.zap.utils;
 
 import java.io.File;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Reader;
+import java.io.Writer;
 import java.net.URL;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.commons.configuration2.XMLConfiguration;
+import org.apache.commons.configuration2.convert.DisabledListDelimiterHandler;
+import org.apache.commons.configuration2.convert.ListDelimiterHandler;
+import org.apache.commons.configuration2.ex.ConfigurationException;
+import org.apache.commons.configuration2.io.FileHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -42,20 +46,31 @@ import org.xml.sax.helpers.DefaultHandler;
  * configurations' file used by ZAP, this way there shouldn't be any problems with character
  * encodings.
  *
- * @see #setDelimiterParsingDisabled(boolean)
+ * @see #setListDelimiterHandler(ListDelimiterHandler)
  * @see XMLConfiguration
  */
 public class ZapXmlConfiguration extends XMLConfiguration {
 
     private static final long serialVersionUID = -8598525138011232529L;
 
+    private static final String ENCODING = "UTF-8";
+
+    private transient FileHandler fileHandler = new FileHandler(this);
+
     /** Creates a new instance of {@code ZapXmlConfiguration}. */
     public ZapXmlConfiguration() {
         super();
 
-        super.setEncoding("UTF-8");
-        super.setDelimiterParsingDisabled(true);
-        super.setListDelimiter('\0');
+        fileHandler.setEncoding(ENCODING);
+        super.setListDelimiterHandler(DisabledListDelimiterHandler.INSTANCE);
+    }
+
+    @Override
+    public Object clone() {
+        ZapXmlConfiguration copy = (ZapXmlConfiguration) super.clone();
+        copy.fileHandler = new FileHandler(copy);
+        copy.fileHandler.setEncoding(ENCODING);
+        return copy;
     }
 
     /**
@@ -142,60 +157,201 @@ public class ZapXmlConfiguration extends XMLConfiguration {
     }
 
     @Override
-    protected Transformer createTransformer() throws TransformerException {
+    protected Transformer createTransformer() throws ConfigurationException {
         Transformer transformer = super.createTransformer();
         transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
         return transformer;
     }
 
     /**
-     * Calling this method has <strong>no</strong> effect. The character encoding used is always the
-     * same, UTF-8.
-     */
-    @Override
-    public void setEncoding(String encoding) {
-        // Always uses UTF-8
-    }
-
-    /**
      * Calling this method has <strong>no</strong> effect. The delimiter parsing is always disabled.
      *
-     * @see #setDelimiterParsingDisabled(boolean)
+     * @see #setListDelimiterHandler(ListDelimiterHandler)
      */
     @Override
-    public void setListDelimiter(char listDelimiter) {
-        // Always use the default character, as calling
-        // setDelimiterParsingDisabled as no effect, there is no need to change
-        // the character.
-    }
-
-    /**
-     * Calling this method has <strong>no</strong> effect. The delimiter parsing is always disabled.
-     */
-    @Override
-    public void setDelimiterParsingDisabled(boolean delimiterParsingDisabled) {
+    public void setListDelimiterHandler(ListDelimiterHandler listDelimiterHandler) {
         // Always disabled.
     }
 
-    @Override
+    /**
+     * Sets the file from which the configuration is loaded and saved.
+     *
+     * @param file the file that has the configuration
+     * @see #getFile()
+     */
+    public void setFile(File file) {
+        fileHandler.setFile(file);
+    }
+
+    /**
+     * Returns the file from which the configuration is loaded and saved, might be {@code null}.
+     *
+     * @return the file, or {@code null} if not set
+     * @see #setFile(File)
+     */
+    public File getFile() {
+        return fileHandler.getFile();
+    }
+
+    /**
+     * Sets the name of the file from which the configuration is loaded and saved.
+     *
+     * @param fileName the name of the file
+     * @see #getFileName()
+     */
+    public void setFileName(String fileName) {
+        fileHandler.setFileName(fileName);
+    }
+
+    /**
+     * Returns the name of the file from which the configuration is loaded and saved, might be
+     * {@code null}.
+     *
+     * @return the name of the file, or {@code null} if not set
+     * @see #setFileName(String)
+     */
+    public String getFileName() {
+        return fileHandler.getFileName();
+    }
+
+    /**
+     * Sets the URL from which the configuration is loaded and saved.
+     *
+     * @param url the URL
+     * @see #getURL()
+     */
+    public void setURL(URL url) {
+        fileHandler.setURL(url);
+    }
+
+    /**
+     * Returns the URL from which the configuration is loaded and saved, might be {@code null}.
+     *
+     * @return the URL, or {@code null} if not set
+     * @see #setURL(URL)
+     */
+    public URL getURL() {
+        return fileHandler.getURL();
+    }
+
+    /**
+     * Loads the configuration from the file or URL previously set.
+     *
+     * @throws ConfigurationException if loading the configuration fails
+     */
+    public void load() throws ConfigurationException {
+        fileHandler.load();
+    }
+
+    /**
+     * Loads the configuration from the given file.
+     *
+     * @param file the file that has the configuration
+     * @throws ConfigurationException if loading the configuration fails
+     */
+    public void load(File file) throws ConfigurationException {
+        fileHandler.setFile(file);
+        fileHandler.load();
+    }
+
+    /**
+     * Loads the configuration from the file with the given name.
+     *
+     * @param fileName the name of the file that has the configuration
+     * @throws ConfigurationException if loading the configuration fails
+     */
+    public void load(String fileName) throws ConfigurationException {
+        fileHandler.setFileName(fileName);
+        fileHandler.load();
+    }
+
+    /**
+     * Loads the configuration from the given URL.
+     *
+     * @param url the URL that has the configuration
+     * @throws ConfigurationException if loading the configuration fails
+     */
+    public void load(URL url) throws ConfigurationException {
+        fileHandler.setURL(url);
+        fileHandler.load();
+    }
+
+    /**
+     * Loads the configuration from the given input stream.
+     *
+     * @param in the input stream to load the configuration from
+     * @throws ConfigurationException if loading the configuration fails
+     */
     public void load(InputStream in) throws ConfigurationException {
-        super.load(in);
-        postLoad();
+        fileHandler.load(in);
     }
 
-    @Override
+    /**
+     * Loads the configuration from the given reader.
+     *
+     * @param in the reader to load the configuration from
+     * @throws ConfigurationException if loading the configuration fails
+     */
     public void load(Reader in) throws ConfigurationException {
-        super.load(in);
-        postLoad();
+        fileHandler.load(in);
     }
 
-    private void postLoad() {
-        // Ensure it's used a "clean" document for proper indentation of the configurations.
-        // In newer Java versions (9+) the text nodes are indented as well, which would lead
-        // to additional text nodes each time the configuration is loaded/saved.
-        clearReferences(getRootNode());
-        String rootName = getRootElementName();
-        getDocument().removeChild(getDocument().getDocumentElement());
-        getDocument().appendChild(getDocument().createElement(rootName));
+    /**
+     * Saves the configuration to the file or URL previously set.
+     *
+     * @throws ConfigurationException if saving the configuration fails
+     */
+    public void save() throws ConfigurationException {
+        fileHandler.save();
+    }
+
+    /**
+     * Saves the configuration to the given file.
+     *
+     * @param file the file to save the configuration to
+     * @throws ConfigurationException if saving the configuration fails
+     */
+    public void save(File file) throws ConfigurationException {
+        fileHandler.save(file);
+    }
+
+    /**
+     * Saves the configuration to the file with the given name.
+     *
+     * @param fileName the name of the file to save the configuration to
+     * @throws ConfigurationException if saving the configuration fails
+     */
+    public void save(String fileName) throws ConfigurationException {
+        fileHandler.save(fileName);
+    }
+
+    /**
+     * Saves the configuration to the given URL.
+     *
+     * @param url the URL to save the configuration to
+     * @throws ConfigurationException if saving the configuration fails
+     */
+    public void save(URL url) throws ConfigurationException {
+        fileHandler.save(url);
+    }
+
+    /**
+     * Saves the configuration to the given output stream.
+     *
+     * @param out the output stream to save the configuration to
+     * @throws ConfigurationException if saving the configuration fails
+     */
+    public void save(OutputStream out) throws ConfigurationException {
+        fileHandler.save(out);
+    }
+
+    /**
+     * Saves the configuration to the given writer.
+     *
+     * @param writer the writer to save the configuration to
+     * @throws ConfigurationException if saving the configuration fails
+     */
+    public void save(Writer writer) throws ConfigurationException {
+        fileHandler.save(writer);
     }
 }

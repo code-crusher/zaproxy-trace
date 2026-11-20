@@ -19,7 +19,7 @@
  */
 package org.zaproxy.zap.common;
 
-import org.apache.commons.configuration.ConversionException;
+import org.apache.commons.configuration2.ex.ConversionException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.parosproxy.paros.common.AbstractParam;

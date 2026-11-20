@@ -65,7 +65,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Pattern;
-import org.apache.commons.configuration.HierarchicalConfiguration;
+import org.apache.commons.configuration2.HierarchicalConfiguration;
+import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.commons.httpclient.HttpState;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -635,7 +636,8 @@ public class ConnectionParam extends AbstractParam {
      */
     public void setProxyExcludedDomains(List<DomainMatcher> proxyExcludedDomains) {
         if (proxyExcludedDomains == null || proxyExcludedDomains.isEmpty()) {
-            ((HierarchicalConfiguration) getConfig()).clearTree(ALL_PROXY_EXCLUDED_DOMAINS_KEY);
+            ((HierarchicalConfiguration<ImmutableNode>) getConfig())
+                    .clearTree(ALL_PROXY_EXCLUDED_DOMAINS_KEY);
 
             this.proxyExcludedDomains = Collections.emptyList();
             this.proxyExcludedDomainsEnabled = Collections.emptyList();
@@ -644,7 +646,8 @@ public class ConnectionParam extends AbstractParam {
 
         this.proxyExcludedDomains = new ArrayList<>(proxyExcludedDomains);
 
-        ((HierarchicalConfiguration) getConfig()).clearTree(ALL_PROXY_EXCLUDED_DOMAINS_KEY);
+        ((HierarchicalConfiguration<ImmutableNode>) getConfig())
+                .clearTree(ALL_PROXY_EXCLUDED_DOMAINS_KEY);
 
         int size = proxyExcludedDomains.size();
         ArrayList<DomainMatcher> enabledExcludedDomains = new ArrayList<>(size);
@@ -675,12 +678,12 @@ public class ConnectionParam extends AbstractParam {
     }
 
     private void loadProxyExcludedDomains() {
-        List<HierarchicalConfiguration> fields =
-                ((HierarchicalConfiguration) getConfig())
+        List<HierarchicalConfiguration<ImmutableNode>> fields =
+                ((HierarchicalConfiguration<ImmutableNode>) getConfig())
                         .configurationsAt(ALL_PROXY_EXCLUDED_DOMAINS_KEY);
         this.proxyExcludedDomains = new ArrayList<>(fields.size());
         ArrayList<DomainMatcher> excludedDomainsEnabled = new ArrayList<>(fields.size());
-        for (HierarchicalConfiguration sub : fields) {
+        for (HierarchicalConfiguration<ImmutableNode> sub : fields) {
             String value = sub.getString(PROXY_EXCLUDED_DOMAIN_VALUE_KEY, "");
             if (value.isEmpty()) {
                 log.warn(
@@ -775,7 +778,8 @@ public class ConnectionParam extends AbstractParam {
             }
         }
 
-        ((HierarchicalConfiguration) getConfig()).clearTree(ALL_SECURITY_PROTOCOLS_ENABLED_KEY);
+        ((HierarchicalConfiguration<ImmutableNode>) getConfig())
+                .clearTree(ALL_SECURITY_PROTOCOLS_ENABLED_KEY);
 
         for (int i = 0; i < enabledProtocols.length; ++i) {
             String elementBaseKey = ALL_SECURITY_PROTOCOLS_ENABLED_KEY + "(" + i + ")";

@@ -66,8 +66,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.apache.commons.configuration.ConversionException;
-import org.apache.commons.configuration.HierarchicalConfiguration;
+import org.apache.commons.configuration2.HierarchicalConfiguration;
+import org.apache.commons.configuration2.ex.ConversionException;
+import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.parosproxy.paros.Constant;
@@ -301,14 +302,15 @@ public class ScannerParam extends AbstractParam {
         // Parse the parameters that need to be excluded
         // ------------------------------------------------
         try {
-            List<HierarchicalConfiguration> fields =
-                    ((HierarchicalConfiguration) getConfig()).configurationsAt(EXCLUDED_PARAMS_KEY);
+            List<HierarchicalConfiguration<ImmutableNode>> fields =
+                    ((HierarchicalConfiguration<ImmutableNode>) getConfig())
+                            .configurationsAt(EXCLUDED_PARAMS_KEY);
 
             this.excludedParams.clear();
             this.excludedParamsMap.clear();
             List<String> tempParamNames = new ArrayList<>(fields.size());
 
-            for (HierarchicalConfiguration sub : fields) {
+            for (HierarchicalConfiguration<ImmutableNode> sub : fields) {
                 String name = sub.getString(EXCLUDED_PARAM_NAME, "");
                 if (!name.isEmpty() && !tempParamNames.contains(name)) {
                     tempParamNames.add(name);
@@ -394,7 +396,7 @@ public class ScannerParam extends AbstractParam {
      */
     public void setExcludedParamList(List<ScannerParamFilter> filters) {
 
-        ((HierarchicalConfiguration) getConfig()).clearTree(EXCLUDED_PARAMS_KEY);
+        ((HierarchicalConfiguration<ImmutableNode>) getConfig()).clearTree(EXCLUDED_PARAMS_KEY);
         this.excludedParams.clear();
         this.excludedParamsMap.clear();
 

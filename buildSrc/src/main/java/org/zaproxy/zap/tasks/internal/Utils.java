@@ -34,8 +34,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.commons.configuration2.ex.ConfigurationException;
 
 public final class Utils {
 
@@ -46,7 +45,7 @@ public final class Utils {
 
     public static Map<String, MarketplaceAddOn> getZapVersionsAddOns(Path zapVersionsFile)
             throws IOException {
-        XMLConfiguration zapVersionsXml = new ZapXmlConfiguration();
+        ZapXmlConfiguration zapVersionsXml = new ZapXmlConfiguration();
         try {
             zapVersionsXml.load(zapVersionsFile.toFile());
         } catch (ConfigurationException e) {
