@@ -469,7 +469,18 @@ def zap_client_spider(zap, target, max_time):
         raise_scan_not_started()
     time.sleep(5)
 
-    while (int(zap.clientSpider.status(spider_scan_id)) < 100):
+    # The spider should stop itself when the maximum duration is reached, but
+    # enforce the time limit (with some leeway) just in case it does not
+    if max_time:
+        end_time = time.time() + max_time * 60 + 60
+    else:
+        end_time = 0
+    while int(zap.clientSpider.status(spider_scan_id)) < 100:
+        if end_time and time.time() > end_time:
+            logging.warning('Client Spider did not finish within the specified time, stopping it')
+            zap.clientSpider.stop(spider_scan_id)
+            time.sleep(10)
+            break
         logging.debug('Client Spider progress %: ' + zap.clientSpider.status(spider_scan_id))
         time.sleep(5)
     logging.debug('Client Spider complete')

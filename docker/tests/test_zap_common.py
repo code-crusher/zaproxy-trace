@@ -1,5 +1,6 @@
 import unittest
 from datetime import datetime
+from itertools import count
 from unittest.mock import Mock, PropertyMock, patch
 
 import zap_common
@@ -105,6 +106,87 @@ class TestZapCommon(unittest.TestCase):
             zap_common.zap_ajax_spider(zap, target, max_time)
 
         zap.ajaxSpider.set_option_max_duration.assert_called_once_with(str(max_time))
+
+    def test_zap_client_spider(self):
+        """Client Spider is started and waits until finished."""
+        scan_id = 1
+        zap = Mock()
+        zap.clientSpider.scan.return_value = scan_id
+        zap.clientSpider.status.side_effect = ["0", "50", "100"]
+        target = "http://target.example.com"
+        max_time = None
+
+        with patch("time.sleep"):
+            zap_common.zap_client_spider(zap, target, max_time)
+
+        zap.clientSpider.set_option_max_duration.assert_not_called()
+        zap.clientSpider.scan.assert_called_once_with(url=target, contextname=None)
+        zap.clientSpider.status.assert_called_with(scan_id)
+        self.assertEqual(3, zap.clientSpider.status.call_count)
+        zap.clientSpider.stop.assert_not_called()
+
+    def test_zap_client_spider_raises_exception_if_not_started(self):
+        """Client Spider raises exception if not started."""
+        zap = Mock()
+        zap.clientSpider.scan.return_value = "url_not_in_context"
+        target = "http://target.example.com"
+        max_time = None
+
+        with self.assertRaises(zap_common.ScanNotStartedException):
+            zap_common.zap_client_spider(zap, target, max_time)
+
+        zap.clientSpider.scan.assert_called_once_with(url=target, contextname=None)
+        zap.clientSpider.status.assert_not_called()
+
+    def test_zap_client_spider_with_max_time(self):
+        """Client Spider is started with specified maximum time."""
+        scan_id = 1
+        zap = Mock()
+        zap.clientSpider.scan.return_value = scan_id
+        zap.clientSpider.status.side_effect = ["0", "50", "100"]
+        target = "http://target.example.com"
+        max_time = 10
+
+        with patch("time.sleep"):
+            zap_common.zap_client_spider(zap, target, max_time)
+
+        zap.clientSpider.set_option_max_duration.assert_called_once_with(str(max_time))
+        zap.clientSpider.stop.assert_not_called()
+
+    def test_zap_client_spider_with_max_time_stops_if_not_finished(self):
+        """Client Spider is stopped if it does not finish within the specified maximum time."""
+        scan_id = 1
+        zap = Mock()
+        zap.clientSpider.scan.return_value = scan_id
+        zap.clientSpider.status.return_value = "99"
+        target = "http://target.example.com"
+        max_time = 10
+
+        with patch("time.sleep"), patch("time.time") as mock_time:
+            mock_time.side_effect = count(step=1000)
+
+            zap_common.zap_client_spider(zap, target, max_time)
+
+        zap.clientSpider.set_option_max_duration.assert_called_once_with(str(max_time))
+        zap.clientSpider.stop.assert_called_once_with(scan_id)
+
+    def test_zap_client_spider_without_max_time_does_not_stop(self):
+        """Client Spider is not stopped if no maximum time is specified."""
+        scan_id = 1
+        zap = Mock()
+        zap.clientSpider.scan.return_value = scan_id
+        zap.clientSpider.status.side_effect = ["0", "50", "100"]
+        target = "http://target.example.com"
+        max_time = 0
+
+        with patch("time.sleep"), patch("time.time") as mock_time:
+            mock_time.side_effect = count(step=1000)
+
+            zap_common.zap_client_spider(zap, target, max_time)
+
+        zap.clientSpider.set_option_max_duration.assert_not_called()
+        zap.clientSpider.stop.assert_not_called()
+        zap.clientSpider.status.assert_called_with(scan_id)
 
     def test_zap_active_scan(self):
         """Active Scan is started and waits until finished."""

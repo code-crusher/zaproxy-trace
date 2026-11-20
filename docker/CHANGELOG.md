@@ -1,6 +1,9 @@
 # Changelog
 All notable changes to the docker containers will be documented in this file.
 
+### 2026-11-20
+- Enforce the Client Spider time limit in the packaged scans, stopping the spider if it does not finish within the specified time (Issue 9471).
+
 ### 2026-10-28
 - Updated to use Webswing 26.
 
