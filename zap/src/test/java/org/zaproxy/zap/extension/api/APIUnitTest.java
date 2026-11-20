@@ -48,6 +48,7 @@ import org.parosproxy.paros.model.Model;
 import org.parosproxy.paros.model.OptionsParam;
 import org.parosproxy.paros.network.HttpHeader;
 import org.parosproxy.paros.network.HttpInputStream;
+import org.parosproxy.paros.network.HttpMalformedHeaderException;
 import org.parosproxy.paros.network.HttpMessage;
 import org.parosproxy.paros.network.HttpOutputStream;
 import org.parosproxy.paros.network.HttpRequestHeader;
@@ -126,6 +127,53 @@ class APIUnitTest {
         // Then
         assertThat(requestHandled, is(notNullValue()));
         assertThat(apiImplementor.wasUsed(), is(equalTo(true)));
+    }
+
+    @Test
+    void shouldSetDefaultResponseHeaderToHandledCallbackThatDidNotSetResponseHeader()
+            throws Exception {
+        // Given
+        API api = new API();
+        api.setOptionsParamApi(createOptionsParamApi());
+        TestApiImplementor apiImplementor = new TestApiImplementor();
+        String requestUri = api.getCallBackUrl(apiImplementor, "https://" + API.API_DOMAIN);
+        // When
+        HttpMessage requestHandled =
+                api.handleApiRequest(
+                        createApiRequest(new byte[] {127, 0, 0, 1}, API.API_DOMAIN, requestUri),
+                        createMockedHttpInputStream(),
+                        createMockedHttpOutputStream());
+        // Then
+        assertThat(requestHandled, is(notNullValue()));
+        assertThat(apiImplementor.wasUsed(), is(equalTo(true)));
+        assertThat(requestHandled.getResponseHeader().getStatusCode(), is(equalTo(200)));
+        assertThat(requestHandled.getResponseHeader().getVersion(), is(equalTo("HTTP/1.1")));
+        assertThat(
+                requestHandled.getResponseHeader().getContentLength(),
+                is(equalTo(requestHandled.getResponseBody().length())));
+        assertThat(requestHandled.getResponseBody().toString(), is(equalTo("response")));
+    }
+
+    @Test
+    void shouldKeepResponseHeaderSetByHandledCallback() throws Exception {
+        // Given
+        API api = new API();
+        api.setOptionsParamApi(createOptionsParamApi());
+        TestApiImplementorWithResponseHeader apiImplementor =
+                new TestApiImplementorWithResponseHeader();
+        String requestUri = api.getCallBackUrl(apiImplementor, "https://" + API.API_DOMAIN);
+        // When
+        HttpMessage requestHandled =
+                api.handleApiRequest(
+                        createApiRequest(new byte[] {127, 0, 0, 1}, API.API_DOMAIN, requestUri),
+                        createMockedHttpInputStream(),
+                        createMockedHttpOutputStream());
+        // Then
+        assertThat(requestHandled, is(notNullValue()));
+        assertThat(apiImplementor.wasUsed(), is(equalTo(true)));
+        assertThat(
+                requestHandled.getResponseHeader().getStatusCode(),
+                is(equalTo(TestApiImplementorWithResponseHeader.STATUS_CODE)));
     }
 
     @Test
@@ -863,6 +911,22 @@ class APIUnitTest {
 
         boolean wasUsed() {
             return used;
+        }
+    }
+
+    private static class TestApiImplementorWithResponseHeader extends TestApiImplementor {
+
+        static final int STATUS_CODE = 302;
+
+        @Override
+        public String handleCallBack(HttpMessage msg) throws ApiException {
+            super.handleCallBack(msg);
+            try {
+                msg.setResponseHeader("HTTP/1.1 " + STATUS_CODE + " Found");
+            } catch (HttpMalformedHeaderException e) {
+                throw new ApiException(ApiException.Type.INTERNAL_ERROR, e);
+            }
+            return "";
         }
     }
 }

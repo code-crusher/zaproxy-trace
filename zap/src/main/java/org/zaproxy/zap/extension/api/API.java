@@ -625,6 +625,13 @@ public class API {
             msg.setResponseHeader(getDefaultResponseHeader(contentType));
             msg.setResponseBody(response);
             msg.getResponseHeader().setContentLength(msg.getResponseBody().length());
+        } else if (!error && callbackImpl != null && msg.getResponseHeader().isEmpty()) {
+            // The callback implementor did not provide a response header, use a default one
+            // with the returned response, otherwise the client (e.g. a browser) would receive
+            // a malformed response, which might prevent it from completing the navigation.
+            msg.setResponseHeader(getDefaultResponseHeader(contentType));
+            msg.setResponseBody(response);
+            msg.getResponseHeader().setContentLength(msg.getResponseBody().length());
         }
 
         if (impl != null) {
