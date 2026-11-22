@@ -2023,7 +2023,40 @@ public class ExtensionScript extends ExtensionAdaptor implements CommandLineList
 
         Invocable invocable = invokeScript(script);
         if (invocable != null) {
-            return withAddOnClassLoader(() -> invocable.getInterface(class1));
+            return withAddOnClassLoader(() -> getInterfaceFromEngine(script, invocable, class1));
+        }
+        return null;
+    }
+
+    /**
+     * Gets the interface {@code clazz} from the given {@code invocable} engine of the given {@code
+     * script}, handling the errors that the script engine might throw.
+     *
+     * <p>The errors {@code NoClassDefFoundError} and {@code ExceptionInInitializerError} might be
+     * thrown if a required class was not properly initialised, for example, if the engine was
+     * closed (by its cleaner) while the class was being initialised. Those errors are reported as
+     * an error of the {@code script} instead of propagating, to not break the caller (which might
+     * not expect an {@code Error}).
+     *
+     * @param script the script that will be invoked, must not be {@code null}.
+     * @param invocable the engine from which to obtain the interface, must not be {@code null}.
+     * @param clazz the interface that will be obtained from the {@code invocable}.
+     * @return the interface implemented by the script, or {@code null} if an error occurred while
+     *     obtaining it.
+     */
+    private <T> T getInterfaceFromEngine(
+            ScriptWrapper script, Invocable invocable, Class<T> clazz) {
+        Writer writer = getWriters(script);
+        try {
+            return invocable.getInterface(clazz);
+        } catch (Exception e) {
+            handleScriptException(script, writer, e);
+        } catch (NoClassDefFoundError | ExceptionInInitializerError e) {
+            if (e.getCause() instanceof Exception) {
+                handleScriptException(script, writer, (Exception) e.getCause());
+            } else {
+                handleUnspecifiedScriptError(script, writer, e.getMessage());
+            }
         }
         return null;
     }
@@ -2055,7 +2088,7 @@ public class ExtensionScript extends ExtensionAdaptor implements CommandLineList
             // the script wrapper has overridden the usual scripting mechanism
             return iface;
         }
-        return invokeScriptWithOutAddOnLoader(script).getInterface(clazz);
+        return getInterfaceFromEngine(script, invokeScriptWithOutAddOnLoader(script), clazz);
     }
 
     @Override
