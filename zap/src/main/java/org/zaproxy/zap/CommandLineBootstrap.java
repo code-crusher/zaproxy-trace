@@ -141,7 +141,23 @@ public class CommandLineBootstrap extends HeadlessBootstrap {
             rc = control.getExitStatus();
         }
 
+        exit(rc);
+
         return rc;
+    }
+
+    /**
+     * Exits the process with the given status.
+     *
+     * <p>Called after the command line options have been processed and ZAP shut down, to ensure the
+     * process terminates even if add-ons left non-daemon threads running.
+     *
+     * <p><strong>Note:</strong> Not part of the public API.
+     *
+     * @param status the exit status.
+     */
+    void exit(int status) {
+        System.exit(status);
     }
 
     @Override
