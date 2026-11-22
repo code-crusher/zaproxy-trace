@@ -324,7 +324,6 @@ public class ActiveScanPanel extends ScanPanel2<ActiveScan, ScanController<Activ
                 // Its the custom scanner - none of these controls make sense
                 this.getProgressBar().setEnabled(false);
                 this.getProgressButton().setEnabled(false);
-                this.getPauseScanButton().setEnabled(false);
                 this.getStopScanButton().setEnabled(false);
             }
         } else {

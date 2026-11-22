@@ -59,6 +59,7 @@ public class AttackModeScanner implements EventConsumer {
     private ExtensionAlert extAlert = null;
     private AttackModeThread attackModeThread = null;
     private boolean rescanOnChange = false;
+    private volatile boolean paused = false;
 
     private static final Logger LOGGER = LogManager.getLogger(AttackModeScanner.class);
 
@@ -82,6 +83,7 @@ public class AttackModeScanner implements EventConsumer {
     public void start() {
         LOGGER.debug("Starting");
         nodeStack.clear();
+        paused = false;
 
         this.addAllInScope();
 
@@ -108,8 +110,40 @@ public class AttackModeScanner implements EventConsumer {
         if (this.attackModeThread != null) {
             this.attackModeThread.shutdown();
         }
+        paused = false;
         nodeStack.clear();
         updateCount();
+    }
+
+    /**
+     * Pauses the attack mode scanning, if it is running.
+     *
+     * <p>While paused no new nodes are attacked and the scans already in progress are paused too.
+     */
+    public void pause() {
+        LOGGER.debug("Pausing");
+        paused = true;
+        if (this.attackModeThread != null) {
+            this.attackModeThread.pauseScanners();
+        }
+    }
+
+    /** Resumes the attack mode scanning, if it was paused. */
+    public void resume() {
+        LOGGER.debug("Resuming");
+        paused = false;
+        if (this.attackModeThread != null) {
+            this.attackModeThread.resumeScanners();
+        }
+    }
+
+    /**
+     * Tells whether or not the attack mode scanning is paused.
+     *
+     * @return {@code true} if the attack mode scanning is paused, {@code false} otherwise.
+     */
+    public boolean isPaused() {
+        return paused;
     }
 
     @Override
@@ -259,7 +293,7 @@ public class AttackModeScanner implements EventConsumer {
         private int scannerCount = 4;
         private List<Scanner> scanners = new ArrayList<>();
         private AttackScan ascanWrapper;
-        private boolean running = false;
+        private volatile boolean running = false;
 
         @Override
         public void run() {
@@ -287,12 +321,12 @@ public class AttackModeScanner implements EventConsumer {
                 if (scanStatus != null && scanStatus.getScanCount() != nodeStack.size()) {
                     updateCount();
                 }
-                if (nodeStack.isEmpty() || scanners.size() == scannerCount) {
+                if (nodeStack.isEmpty() || scanners.size() == scannerCount || paused) {
                     if (scanners.size() > 0) {
                         // Check to see if any have finished
                         scannerComplete(-1);
                     }
-                    // Still scanning a node or nothing to scan now
+                    // Still scanning a node, paused, or nothing to scan now
                     try {
                         Thread.sleep(500);
                     } catch (InterruptedException e) {
@@ -300,7 +334,7 @@ public class AttackModeScanner implements EventConsumer {
                     }
                     continue;
                 }
-                while (nodeStack.size() > 0 && scanners.size() < scannerCount) {
+                while (!paused && nodeStack.size() > 0 && scanners.size() < scannerCount) {
                     SiteNode node = nodeStack.remove(0);
                     LOGGER.debug("Attacking node {}", node.getNodeName());
 
@@ -314,6 +348,10 @@ public class AttackModeScanner implements EventConsumer {
                     scanner.addScannerListener(this);
                     synchronized (this.scanners) {
                         this.scanners.add(scanner);
+                        if (paused) {
+                            // Paused while the scanner was being created
+                            scanner.pause();
+                        }
                     }
 
                     if (View.isInitialised()) {
@@ -388,6 +426,41 @@ public class AttackModeScanner implements EventConsumer {
         }
 
         @Override
+        public boolean isPaused() {
+            return AttackModeScanner.this.paused;
+        }
+
+        @Override
+        public void pause() {
+            AttackModeScanner.this.pause();
+        }
+
+        @Override
+        public void resume() {
+            AttackModeScanner.this.resume();
+        }
+
+        public void pauseScanners() {
+            synchronized (this.scanners) {
+                for (Scanner scanner : this.scanners) {
+                    if (!scanner.isStop()) {
+                        scanner.pause();
+                    }
+                }
+            }
+        }
+
+        public void resumeScanners() {
+            synchronized (this.scanners) {
+                for (Scanner scanner : this.scanners) {
+                    if (!scanner.isStop()) {
+                        scanner.resume();
+                    }
+                }
+            }
+        }
+
+        @Override
         public boolean isRunning() {
             return this.running;
         }
@@ -415,5 +488,11 @@ public class AttackModeScanner implements EventConsumer {
         boolean isRunning();
 
         boolean isActive();
+
+        boolean isPaused();
+
+        void pause();
+
+        void resume();
     }
 }

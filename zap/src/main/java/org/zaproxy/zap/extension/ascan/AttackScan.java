@@ -78,17 +78,21 @@ public class AttackScan extends ActiveScan {
 
     @Override
     public void pauseScan() {
-        // Do nothing
+        if (attackModeScannerThread != null) {
+            attackModeScannerThread.pause();
+        }
     }
 
     @Override
     public void resumeScan() {
-        // Do nothing
+        if (attackModeScannerThread != null) {
+            attackModeScannerThread.resume();
+        }
     }
 
     @Override
     public boolean isPaused() {
-        return false;
+        return attackModeScannerThread != null && attackModeScannerThread.isPaused();
     }
 
     @Override
